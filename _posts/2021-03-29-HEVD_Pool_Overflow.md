@@ -1,8 +1,7 @@
 ---
 layout: post
 title: HEVD Exploits -- Windows 7 x86 Uninitialized Stack Variable
-date: 2021-03-31
-classes: wide
+date: 2021-03-31 16:33:46 +0200
 categories: [Infosec, HEVD]
 header:
   teaser: /assets/images/avatar.jpg
@@ -41,7 +40,7 @@ This one is pretty straightforward, we'll be attacking HEVD as normal, this time
 
 Call graph for our desired function:
 
-![](/assets/images/AWE/svioctl.PNG)
+
 
 We will be targeting a vulnerable function that triggers an uninitialized stack variable vulnerablity. We can see from the `IrpDeviceIoCtlHandler` function in IDA that we branch to our desired call in the bottom left after failing a `jz` after comparing our IOCTL value (`eax`) with `0x22202B` and then subtracting another `0x4` and successfully triggering a `jz`. So we can conclude that our desired IOCTL is `0x22202B` + `0x4`, which is `0x22202F.`
 
@@ -102,18 +101,18 @@ int main()
 
 ```
 
-![](/assets/images/AWE/wehit.PNG)
+
 
 As you can see, we hit our breakpoint so our IOCTL is correct. Let's figure out what this function actually does. 
 
 ## Breaking Down `TriggerUninitializedStackVariable`
 Once we hit our code block, there's a call to `UninitializedStackVariableIoctlHandler` which in turn calls `TriggerUninitializedStackVariable`. We can see a test inside this IOCTL handler to check whether or not our buffer was null. We can see this because it calls a `test ecx, ecx` after placing the user buffer into `ecx`. You can read more about [test here.](https://en.wikipedia.org/wiki/TEST_(x86_instruction)). 
 
-![](/assets/images/AWE/usvih.PNG)
+
 
 After that, we will fail the default `jz` case and end up calling `TriggerUninitializedStackVariable`. This is what the function looks like when we inspect in IDA.
 
-![](/assets/images/AWE/usvbeg.PNG)
+
 
 We see there's a [`ProbeForRead`](https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-probeforread) call and then we're loading a value of `0xBAD0B0B0` into `eax` and then executing a `cmp` between that arbitrary static value and `esi`. This is probably a compare between our user provided buffer and this static value. Obviously there are two branches from this.
 
@@ -296,7 +295,7 @@ int main()
 }
 ```
 
-![](/assets/images/AWE/wediditbb.PNG)
+
 
 ## Conclusion
 Figuring out how to deal with that `PageFrameNumbers` parameter of the `NtMapUserPhysicalPages` API was really hard for me as someone who is new to C++. In Python and Powershell it looked really straightforward but was definitely more cumbersome in C++. Couldn't have done this one without the tons of the help I got from the mentioned blog post authors, thanks a ton to them, I'd have been lost without their content. Thanks again for reading!
