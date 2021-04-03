@@ -1,10 +1,8 @@
 ---
-title: Customize the Favicon
-author: Cotes Chung
-date: 2019-08-11 00:34:00 +0800
-categories: [Blogging, Tutorial]
-tags: [favicon]
-toc: false
+layout: post
+title:  "Welcome to Jekyll!"
+date:   2021-04-03 16:33:46 +0200
+categories: jekyll update
 ---
 
 In [**Chirpy**](https://github.com/cotes2020/jekyll-theme-chirpy/), the image files of [Favicons](https://www.favicon-generator.org/about/) are placed in `assets/img/favicons/`. You may need to replace them with your own. So let's see how to customize these Favicons.

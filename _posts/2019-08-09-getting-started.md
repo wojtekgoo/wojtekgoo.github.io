@@ -1,10 +1,8 @@
 ---
-title: Getting Started
-author: Cotes Chung
-date: 2019-08-09 20:55:00 +0800
-categories: [Blogging, Tutorial]
-tags: [getting started]
-pin: true
+layout: post
+title:  "Welcome to Jekyll!"
+date:   2021-04-03 16:33:46 +0200
+categories: jekyll update
 ---
 
 ## Prerequisites
