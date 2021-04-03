@@ -3,14 +3,7 @@ layout: post
 title: "HEVD Exploits -- Windows 7 x86 Uninitialized Stack Variable"
 date: 2021-03-31 16:33:46 +0200
 categories: [Infosec, HEVD]
-tags:
-  - Exploit Dev
-  - Drivers
-  - Windows
-  - x86
-  - Shellcoding
-  - Kernel Exploitation
-  - Uninitialized Stack Variable
+tags: [Exploit Dev, Drivers, Windows, x86, Shellcoding, Kernel Exploitation]
 ---
 
 ## Introduction
