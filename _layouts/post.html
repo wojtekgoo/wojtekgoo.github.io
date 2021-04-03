@@ -12,7 +12,7 @@ layout: default
       <h1 data-toc-skip>{{ page.title }}</h1>
 
       <div class="post-meta text-muted d-flex flex-column">
-        <!-- Published date and authorr -->
+        <!-- Published date and author -->
         <div>
           <span class="semi-bold">
             {{ page.author | default: site.social.name }}
@@ -30,7 +30,7 @@ layout: default
           {% endif %}
 
           <!-- read time -->
-          
+          {% include read-time.html content=content %}
 
           <!-- page views -->
           {% if site.google_analytics.pv.enabled %}
