@@ -126,7 +126,6 @@ This is interesting because you can see that there are two values being placed o
 
 However, if we do NOT take this code path, we see we eventually do a `cmp [ebp+UninitializedStackVariable.Callback], edi` operation. When I stepped through this in WinDBG, this was making sure that the pointer to this `.Callback` function was not `NULL`. As long as it's not `NULL` (our `jz` fails, and we take the red code path), we will call the function. Since our function pointer was never initialized to `NULL` because we didn't provide the magic value, we will end up calling whatever this function pointer happens to be pointing to on the stack. After I right-click on the offset and change the value to hex we see:
 
-![](/assets/images/AWE/uninit.PNG)
 
 So it's going to call whatever is located at `ebp - 0x108`. That's really cool! What if we can get a pointer to shellcode at that address? That would require us to control a lot of values on the stack. Luckily, people way smarter than me have figured out how to do that via an API. 
 
