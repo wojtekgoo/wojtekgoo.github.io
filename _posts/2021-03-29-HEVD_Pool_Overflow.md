@@ -1,8 +1,6 @@
 ---
 layout: post
 title: HEVD Exploits -- Windows 7 x86 Uninitialized Stack Variable
-date: 2021-03-31
-classes: wide
 header:
   teaser: /assets/images/avatar.jpg
 tags:
