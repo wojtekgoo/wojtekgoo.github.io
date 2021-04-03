@@ -1,8 +1,9 @@
 ---
-layout: post
-title:  "Welcome to Jekyll!"
-date:   2021-04-03 16:33:46 +0200
-categories: jekyll update
+title: Enable Google Page Views
+author: Dinesh Prasanth Moluguwan Krishnamoorthy
+date: 2021-01-03 18:32:00 -0500
+categories: [Blogging, Tutorial]
+tags: [google analytics, pageviews]
 ---
 
 
