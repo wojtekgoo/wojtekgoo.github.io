@@ -73,7 +73,8 @@ GEM
 
 PLATFORMS
   x64-mingw32
-
+  x86_64-linux
+  
 DEPENDENCIES
   jekyll (~> 4.2.0)
   jekyll-feed (~> 0.12)
