@@ -4,9 +4,9 @@ on:
     branches:
       - main
     paths-ignore:
-      - .gitignore
-      - README.md
-      - LICENSE
+      - '.gitignore'
+      - 'README.md'
+      - 'LICENSE'
 
 jobs:
   continuous-delivery:
@@ -28,7 +28,7 @@ jobs:
       - name: Bundle Caching
         uses: actions/cache@v2
         with:
-          path: ${{ env.GEMS_PATH }}
+          path: vendor/bundle #${{ env.GEMS_PATH }}
           key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-gems-
