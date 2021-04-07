@@ -47,16 +47,14 @@ jobs:
             bundle exec jekyll b -b "" -d "$SPEC_TEST"
           fi
 
-      - name: Test Site
+       - name: Test Site
         run: |
-          bash tools/test.sh
+          if [[ -n $SPEC_TEST ]]; then
+            bash tools/test.sh -d "$SPEC_TEST"
+          else
+            bash tools/test.sh
+          fi
 
       - name: Deploy
         run: |
-          if [[ -n $BASE_URL ]]; then
-            mv _site$BASE_URL _site-rename
-            rm -rf _site
-            mv _site-rename _site
-          fi
-
           bash tools/deploy.sh
