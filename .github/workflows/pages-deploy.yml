@@ -25,6 +25,11 @@ jobs:
           ruby-version: 2.7
           #bundler-cache: true
 
+      - name: Bundle Install
+        run: |
+          bundle config path ${{ env.GEMS_PATH }}
+          bundle install --jobs 4 --retry 3
+
       - name: Check baseurl
         run: |
           baseurl="$(grep '^baseurl:' _config.yml | sed "s/.*: *//;s/['\"]//g;s/#.*//")"
