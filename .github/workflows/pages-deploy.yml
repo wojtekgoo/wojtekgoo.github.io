@@ -2,11 +2,11 @@ name: 'Automatic build'
 on:
   push:
     branches:
-      - main
+      - master
     paths-ignore:
-      - '.gitignore'
-      - 'README.md'
-      - 'LICENSE'
+      - .gitignore
+      - README.md
+      - LICENSE
 
 jobs:
   continuous-delivery:
@@ -23,20 +23,7 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.7
-          #bundler-cache: truee
-
-      - name: Bundle Caching
-        uses: actions/cache@v2
-        with:
-          path: vendor/bundle #${{ env.GEMS_PATH }}
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-
-
-      - name: Bundle Install
-        run: |
-          bundle config path ${{ env.GEMS_PATH }}
-          bundle install --jobs 4 --retry 3
+          bundler-cache: true
 
       - name: Check baseurl
         run: |
