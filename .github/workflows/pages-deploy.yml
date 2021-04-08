@@ -13,8 +13,8 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    env:
-      GEMS_PATH: /vendor/bundle
+    #env:
+    #  GEMS_PATH: /vendor/bundle
 
     steps:
       - name: Checkout
