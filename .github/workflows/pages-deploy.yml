@@ -17,10 +17,6 @@ jobs:
     #  GEMS_PATH: vendor/bundle
 
     steps:
-      - name: Init (create tags and categories)
-        run: |
-          bash tools/init.sh
-
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -57,6 +53,11 @@ jobs:
             # Bypass the defects of htmlproofer
             bundle exec jekyll b -b "" -d "$SPEC_TEST"
           fi
+
+      - name: Init (create tags and categories)
+        run: |
+          bash tools/init.sh
+
       - name: Test Site
         run: |
           if [[ -n $SPEC_TEST ]]; then
