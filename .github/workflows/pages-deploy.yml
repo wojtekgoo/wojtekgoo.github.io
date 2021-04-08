@@ -2,7 +2,7 @@ name: 'Automatic build'
 on:
   push:
     branches:
-      - main
+      - master
     paths-ignore:
       - .gitignore
       - README.md
@@ -13,6 +13,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      GEMS_PATH: ~/vendor/bundle
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -20,23 +23,27 @@ jobs:
           fetch-depth: 0  # for posts's lastmod
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+        uses: actions/setup-ruby@v1
         with:
-          ruby-version: 2.7
-          #bundler-cache: true
+          ruby-version: 2.6.x
 
+      - name: Bundle Caching
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.GEMS_PATH }}
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-
       - name: Bundle Install
         run: |
           bundle config path ${{ env.GEMS_PATH }}
           bundle install --jobs 4 --retry 3
-
       - name: Check baseurl
         run: |
           baseurl="$(grep '^baseurl:' _config.yml | sed "s/.*: *//;s/['\"]//g;s/#.*//")"
           if [[ -n $baseurl ]]; then
-            echo "BASE_URL=$baseurl" >> $GITHUB_ENV
+            echo "SPEC_TEST=_site_no_baseurl" >> $GITHUB_ENV
           fi
-
       - name: Build Site
         env:
           JEKYLL_ENV: production
@@ -46,15 +53,6 @@ jobs:
             # Bypass the defects of htmlproofer
             bundle exec jekyll b -b "" -d "$SPEC_TEST"
           fi
-
-      - name: Init Site
-        run: |
-          if [[ -n $SPEC_TEST ]]; then
-            bash tools/init.sh -d "$SPEC_TEST"
-          else
-            bash tools/init.sh
-          fi
-
       - name: Test Site
         run: |
           if [[ -n $SPEC_TEST ]]; then
