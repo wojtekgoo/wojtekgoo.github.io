@@ -1,4 +1,4 @@
-# Chirpy
+# Test Blog
 
 Language: English | [Polish](https://github.com/wojtekgoo/wojtekgoo.github.io/blob/master/docs/README.pl.md)
 
