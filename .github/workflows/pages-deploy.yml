@@ -17,6 +17,10 @@ jobs:
     #  GEMS_PATH: vendor/bundle
 
     steps:
+      - name: Init (create tags and categories)
+        run: |
+          bash tools/init.sh
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -63,5 +67,4 @@ jobs:
           
       - name: Deploy
         run: |
-          bash tools/init.sh
           bash tools/deploy.sh
