@@ -17,6 +17,10 @@ jobs:
     #  GEMS_PATH: vendor/bundle
 
     steps:
+      - name: Build categories and tags
+        run: |
+          bash tools/init.sh
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
