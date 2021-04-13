@@ -14,10 +14,12 @@ Finally, as I am fond of Offensive Security trainings, I booked a ticket for the
 
 ## HEVD
 
-This series will be about exploitation of the [Hacksys Extreme Vulnerable Driver](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver). This is a wonderful piece of software with intentional bugs in it, created for those like me who are just starting out in Ring 0 exploitation. <br>There are multiple good articles out there explaining various HEVD vulnerabilities, so almost nothing I create in this blog will be new. However, I noticed that for every exploit I had to combine many different resources to really understand what the vulnerability is about and how to use it, as I could never find a single page that would do the job. Hence I decided to describe it once again for my own reference.
+This series will be about exploitation of the [Hacksys Extreme Vulnerable Driver](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver). This is a wonderful piece of software with intentional bugs in it, created for those like me who are just starting out in Ring 0 exploitation.<br>There are multiple good articles out there explaining various HEVD vulnerabilities, so almost nothing I create in this blog will be new. However, I noticed that for every exploit I had to combine many different resources to really understand what the vulnerability is about and how to use it, as I could never find a single page that would do the job. Hence I decided to describe it once again for my own reference.
 
 **I will not explain:**
 + how to install HEVD
 + how to set up a lab environment
 
-It is not interesting for me and 
+There are good resources that already did it (e.g. [here](https://fluidattacks.com/blog/windows-kernel-debugging/) or [here](https://www.exploit-db.com/docs/44094)) 
+
+### Vulnerability
