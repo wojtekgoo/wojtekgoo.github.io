@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "HEVD: Stack Overflow exploitation"
-date: 2021-04-13 16:33:46 +0100
+date: 2021-04-13 09:00:00 +0100
 categories: [HEVD, Stack Overflow]
 tags: [exploit, drivers, windows, x86, shellcoding, kernel exploitation]
 ---
@@ -14,14 +14,10 @@ Finally, as I am fond of Offensive Security trainings, I booked a ticket for the
 
 ## HEVD
 
-This series will be about exploitation of the [Hacksys Extreme Vulnerable Driver](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver). This is a wonderful piece of software with intentional bugs in it, created for those like me who are just starting out in Ring 0 exploitation. <br>There are multiple good pages out there explaining various HEVD vulnerabilities, so almost nothing I create in this blog will be new. However, I noticed that for every exploit I had to combine many different resources to really understand what the vulnerability is about and how to use it, as I could never find a single page that would do the job. Hence, 
+This series will be about exploitation of the [Hacksys Extreme Vulnerable Driver](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver). This is a wonderful piece of software with intentional bugs in it, created for those like me who are just starting out in Ring 0 exploitation. <br>There are multiple good articles out there explaining various HEVD vulnerabilities, so almost nothing I create in this blog will be new. However, I noticed that for every exploit I had to combine many different resources to really understand what the vulnerability is about and how to use it, as I could never find a single page that would do the job. Hence I decided to describe it once again for my own reference.
 
-**This series will be light on tangential information such as:**
-+ how drivers work, the different types, communication between userland, the kernel, and drivers, etc
-+ how to install HEVD,
+**I will not explain:**
++ how to install HEVD
 + how to set up a lab environment
-+ shellcode analysis
 
-The reason for this is simple, the other blog posts do a much better job detailing this information than I could ever hope to. It feels silly writing this blog series in the first place knowing that there are far superior posts out there; I will not make it even more silly by shoddily explaining these things at a high-level in poorer fashion than those aforementioned posts. Those authors have way more experience than I do and far superior knowledge, I will let them do the explaining. :)
-
-This post/series will instead focus on my experience trying to craft the actual exploits.
+It is not interesting for me and 
