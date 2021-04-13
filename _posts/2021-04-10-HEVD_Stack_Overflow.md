@@ -1,19 +1,20 @@
 ---
 layout: post
 title: "HEVD: Stack Overflow exploitation"
-date: 2021-04-10 16:33:46 +0100
+date: 2021-04-13 16:33:46 +0100
 categories: [HEVD, Stack Overflow]
 tags: [exploit, drivers, windows, x86, shellcoding, kernel exploitation]
 ---
 
 ## Introduction
-Hi, this is the first post on my blog so to humanize myself let me write few words why I created it.\
+Hi, this is the first post on my blog so to humanize myself let me write few words why I created it.
+<br>
 Having spent few years in cybersecurity, I decided I want to do some research on the Windows exploitation which has always fascinated me, but I never felt ready yet to do it seriously.
-Finally, as I am fond of Offensive Security trainings, I booked a ticket for the [Advanced Windows Exploitation](https://www.offensive-security.com/awe-osee/) course. Although it did not happen due to the COVID-19 outbreak, I began extensive research in kernel exploitation. Here, I am blogging my progress as a way for me to reinforce concepts and keep notes I can reference later on.
+Finally, as I am fond of Offensive Security trainings, I booked a ticket for the [Advanced Windows Exploitation](https://www.offensive-security.com/awe-osee/) course. Although it did not happen due to the COVID-19 outbreak, I began extensive research in kernel exploitation.<br> At some point I felt I have to organize my thoughts in more structured manner, so here I am blogging my progress as a way for me to reinforce concepts and keep notes I can reference later on. I hope blogging will force me to teach myself what I do not know and to articulate what I do know.
 
 ## HEVD
 
-This series will be about exploitation of the [Hacksys Extreme Vulnerable Driver](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver). This is a wonderful piece of software with intentional bugs in it, created for those like me who are just starting out in Ring 0 exploitation. There are a ton of good blog posts out there walking through various HEVD exploits. Almost nothing I do or say in this blog will be new or my own thoughts/ideas/techniques. There were instances where I diverged from any strategies I saw employed in the blogposts out of necessity or me trying to do my own thing to learn more.
+This series will be about exploitation of the [Hacksys Extreme Vulnerable Driver](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver). This is a wonderful piece of software with intentional bugs in it, created for those like me who are just starting out in Ring 0 exploitation. <br>There are multiple good pages out there explaining various HEVD vulnerabilities, so almost nothing I create in this blog will be new. However, I noticed that for every exploit I had to combine many different resources to really understand what the vulnerability is about and how to use it, as I could never find a single page that would do the job. Hence, 
 
 **This series will be light on tangential information such as:**
 + how drivers work, the different types, communication between userland, the kernel, and drivers, etc
