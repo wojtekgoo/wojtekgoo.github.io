@@ -38,9 +38,11 @@ System drivers, like HEVD, operate in the Kernel Mode. It means that if we are a
 #### Memory regions
 
 In User Mode there are two main memory regions used for functions implementation: stack and heap.  
-In Kernel Mode there were 
+In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel pool, which played similar role to the userland heap.<sup>1</sup>   
 
 ### Vulnerability
 
 
+
+<sup>1</sup>In March 2019 Microsoft brought Segment Heap used in user land to the kernel.
 
