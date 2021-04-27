@@ -42,16 +42,17 @@ In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel
 
 #### Drivers
 
-Driver is a software that mainly lets OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. You can think of drivers as loadable modules (like DLLs) containing coded that will be executed when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>2)</sup>
+Driver is a software that mainly lets OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. You can think of drivers as loadable modules (like DLLs) containing code that will be executed when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>2)</sup>
 <br><br>
 Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.  
-IOCTL is generated with DeviceIoControl API in user-mode and is passed to the kernel-mode I/O Manager. I/O Manager creates I/O Request Packet (IRP), which is kernel structure used to represent I/O request as it moves around the kernel system. IRP has all the information that the driver needs to perform a given action on an IO request, including the IOCTL.
+IOCTL is generated with DeviceIoControl API in user-mode and is passed to the kernel-mode I/O Manager. I/O Manager creates I/O Request Packet (IRP), which is a kernel structure used to represent I/O request as it moves around the kernel system. IRP has all the information that the driver needs to perform a given action on an IO request, including the IOCTL.
 So when a program issues an IOCTL to a device, an IRP is created in kernel space to reflect that request.  
 <br>
 In summary, an IOCTL is a particular type of "miscellaneous" request to a device driver. An IRP is a data structure for managing all kinds of requests inside the Windows driver kernel architecture.<sup>3)</sup><br><br> 
 DeviceIoControl -> kernel32.dll -> ntdll.dll -> <span style="color:red">|</span> -> I/O Manager -> IRP -> device driver -> HAL -> Hardware
 
-
+![IOCTL flow](/assets/img/IOCTL_flow.odg)
+_IOCTL flow around the system_
 
 ## Vulnerability
 
