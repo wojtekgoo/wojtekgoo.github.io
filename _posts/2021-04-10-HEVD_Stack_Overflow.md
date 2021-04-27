@@ -49,9 +49,8 @@ IOCTL is generated with DeviceIoControl API in user-mode and is passed to the ke
 So when a program issues an IOCTL to a device, an IRP is created in kernel space to reflect that request.  
 <br>
 In summary, an IOCTL is a particular type of "miscellaneous" request to a device driver. An IRP is a data structure for managing all kinds of requests inside the Windows driver kernel architecture.<sup>3)</sup><br><br> 
-DeviceIoControl -> kernel32.dll -> ntdll.dll -> <span style="color:red">|</span> -> I/O Manager -> IRP -> device driver -> HAL -> Hardware
 
-![IOCTL flow](/assets/img/IOCTL_flow.odg)
+![IOCTL flow](/assets/img/IOCTL_flow.png)
 _IOCTL flow around the system_
 
 ## Vulnerability
