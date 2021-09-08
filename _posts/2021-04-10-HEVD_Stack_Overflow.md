@@ -3,13 +3,14 @@ layout: post
 title: "HEVD: Stack Overflow exploitation"
 date: 2021-04-13 09:00:00 +0100
 categories: [HEVD, Stack Overflow]
-tags: [exploit, drivers, windows, x86, shellcoding, kernel exploitation]
+tags: [exploit, drivers, x86, shellcoding, kernel exploitation]
 ---
 
 
 ## HEVD
 
-Over the next few posts in this series I am going to be looking at Windows kernel exploitation via the [Hacksys Extreme Vulnerable Driver](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver). This is a wonderful piece of software with intentional bugs in it, created for those like me who are just starting out in Ring 0 exploitation.<br>There are multiple good articles out there explaining various HEVD vulnerabilities, so almost nothing I create in this blog will be new. However, I noticed that for every exploit I had to combine many different resources to really understand what the vulnerability is about and how to use it, as I could never find a single page that would do the job. Hence I decided to describe it once again for my own reference.
+Over the next few posts in this series I am going to be looking at Windows kernel exploitation via the [Hacksys Extreme Vulnerable Driver](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver). This is a wonderful piece of software with intentional bugs in it, created for those like me who are just starting out in low-level exploitation.  
+There are multiple good articles out there explaining various HEVD vulnerabilities, so almost nothing I create in this blog will be new. However, I noticed that for every exploit I had to combine many different resources to really understand what the vulnerability is about and how to use it, as I could never find a single page that would do the job. Hence I decided to describe it once again for my own reference.
 
 **I will not explain:**
 + how to install HEVD
@@ -28,7 +29,11 @@ Windows operates in two modes:
 + **User Mode**: here, the executing code has limited power - it cannot for example access hardware directly or reference every memory address. To do this, code running in UM must use special APIs that will handle it.
 + **Kernel Mode**: here, the executing code has unrestricted access to the hardware, can use any CPU instruction or reference any memory address  
 
-System drivers, like HEVD, operate in Kernel Mode. It means that if we are able to discover and exploit a vulnerability in the driver, we can force it to execute a piece of malicious code that we placed in UM (like shellcode) with high privileges stemming from the KM. 
+System drivers, like HEVD, operate in Kernel Mode. It means that if we are able to discover and exploit a vulnerability in the driver, we can force it to execute a piece of malicious code that we placed in UM (like shellcode) with high privileges stemming from the KM.
+
+#### Process
+
+When an application starts, Windows creates a *process* for it. Think of a process as a container that holds all the necessary information for application to run. 
 
 #### Memory regions
 
