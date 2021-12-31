@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
       "documentation_uri" => "https://github.com/cotes2020/jekyll-theme-chirpy/blob/master/README.md",
       "homepage_uri"      => "https://cotes2020.github.io/chirpy-demo",
       "source_code_uri"   => "https://github.com/cotes2020/jekyll-theme-chirpy",
-      "wiki_uri"          => "https://github.com/cotes2020/jekyll-theme-chirpy/wiki",
+      "wiki_uri"          => "https://github.com/cotes2020/jekyll-theme-chirpy/wikii",
       "plugin_type"       => "theme"
     }
   
