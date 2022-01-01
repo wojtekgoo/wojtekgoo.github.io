@@ -75,13 +75,17 @@ _WinObj showing symlink for a storage device_
 ##### <span class="myheader">IOCTL and IRP</span>
 
 Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.  
-IOCTL is generated with DeviceIoControl API in user-mode and is passed to the kernel-mode I/O Manager. I/O Manager creates I/O Request Packet (IRP), which is a kernel structure used to represent I/O request as it moves around the kernel system. IRP has all the information that the driver needs to perform a given action on an IO request, including the IOCTL.
-So when a program issues an IOCTL to a device, an IRP is created in kernel space to reflect that request.  
-<br>
-In summary, an IOCTL is a particular type of "miscellaneous" request to a device driver. An IRP is a data structure for managing all kinds of requests inside the Windows driver kernel architecture.<sup>4)</sup><br><br> 
+IOCTL is generated with <code>DeviceIoControl</code> API in user-mode and is passed to the kernel-mode I/O Manager. Windows I/O Manager takes the IOCTL and builds **I/O Request Packet (IRP)** to describe I/O request to kernel-mode components and determine which device to send the IRP to for processing. IRP is a kernel structure used to represent I/O request as it moves around the kernel system. It has all the information that the driver needs to perform a given action on an IO request.
+So when a program issues an IOCTL to a device, an IRP is created in kernel space to reflect that request.
+
+![IRP structure](/assets/img/windbg_irp_structure.png)
+_IRP structure_
+
+In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.<sup>4)</sup><br>
 
 ![IOCTL flow](/assets/img/IOCTL_flow.png)
 _IOCTL flow around the system_
+
 
 ## <span class="myheader">Vulnerability<span>
 
