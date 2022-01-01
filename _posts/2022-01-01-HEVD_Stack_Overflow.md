@@ -52,7 +52,7 @@ In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel
 
 Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>3)</sup><br>
 
-After a driver is loaded, first piece of code that is called is a **DriverEntry** function:
+After a driver is loaded, first piece of code that is called is a <code>DriverEntry</code> function:
 ```c++
 NTSTATUS DriverEntry(
     PDRIVER_OBJECT  DriverObject,
