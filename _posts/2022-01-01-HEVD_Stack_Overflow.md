@@ -66,13 +66,13 @@ The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</
 
 ##### <span class="myheader">Devices</span>
 
-The operating system represents devices by *device objects*. One or more device objects are associated with each device. Device objects serve as the target of all operations on the device. Devices are usually represented by multiple device objects - one for each driver that handles I/O requests for the device.<br>
+The operating system represents devices by *device objects*. Device objects serve as the target of all operations on the device. Devices are usually represented by multiple device objects - one for each driver that handles I/O requests for the device.<br>
 If a device wants to be accessible for user processes, a driver needs to define the device by creating a <code>DEVICE_OBJECT</code> structure and a symbolic link (symlink). One example is <code>C:\</code> symlink that represents storage device. We can check it with <code>WinObj</code> tool from SysInternals suite:
 
 ![Symlink in WinObj](/assets/img/WinObj_symlink.png)
 _WinObj showing symlink for a storage device_
 
-If no device objects are created, then requests cannot be sent to the device.
+
 
 <br><br>
 Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.  
@@ -84,7 +84,7 @@ In summary, an IOCTL is a particular type of "miscellaneous" request to a device
 ![IOCTL flow](/assets/img/IOCTL_flow.png)
 _IOCTL flow around the system_
 
-## Vulnerability
+## <span class="myheader">Vulnerability<span>
 
 The source code for the vulnerable method is located in [StackOverflow.c](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/blob/master/Exploit/StackOverflow.c)
 
