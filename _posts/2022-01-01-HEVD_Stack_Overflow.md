@@ -19,7 +19,7 @@ There are multiple good articles out there explaining various HEVD vulnerabiliti
 
 To set up your lab, read e.g. [this](https://fluidattacks.com/blog/windows-kernel-debugging/) or [this](https://www.exploit-db.com/docs/44094). 
 
-## Windows internals
+## <span class="myheader">Windows internals</span>
 
 Before I deep-dive into the exploitation, below is small refresher of some related concepts. 
 
@@ -48,25 +48,27 @@ All code that runs in kernel mode shares a single virtual address space. This me
 In User Mode there are two main memory regions used for functions implementation: stack and heap.<br>
 In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel pool, which played similar role to the userland heap.<sup>2)</sup>
 
-#### Drivers
+#### Windows Drivers
 
 Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>3)</sup><br>
 
 After a driver is loaded, first piece of code that is called is a <code>DriverEntry</code> function:
 
-```c
+```c++
 NTSTATUS DriverEntry(
     PDRIVER_OBJECT  DriverObject,
     PUNICODE_STRING RegistryPath
 );
 ```
-The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code> structure filled out by the I/O manager during the driver loading process that holds information about the driver itself. I/O manager creates a <code>DRIVER_OBJECT</code> for every driver loaded in the system.<br><br>
+The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code> structure filled out by the I/O manager during the driver loading process that holds information about the driver itself. I/O manager creates a <code>DRIVER_OBJECT</code> for every driver loaded in the system.<br>
 
 The operating system represents devices by *device objects*. One or more device objects are associated with each device. Device objects serve as the target of all operations on the device. Devices are usually represented by multiple device objects - one for each driver that handles I/O requests for the device.<br>
-If a device wants to be accessible for user processes, a driver needs to create a <code>DEVICE_OBJECT</code> and a symbolic link (symlink) for it. One example is <code>C:\</code> symlink that represents storage device. We can check it with <code>WinObj</code> tool from SysInternals suite:
+If a device wants to be accessible for user processes, a driver needs to define the device by creating a <code>DEVICE_OBJECT</code> structure and a symbolic link (symlink). One example is <code>C:\</code> symlink that represents storage device. We can check it with <code>WinObj</code> tool from SysInternals suite:
 
 ![Symlink in WinObj](/assets/img/WinObj_symlink.png)
 _WinObj showing symlink for a storage device_
+
+If no device objects are created, then requests cannot be sent to the device.
 
 <br><br>
 Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.  
