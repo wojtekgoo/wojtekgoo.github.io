@@ -50,7 +50,9 @@ In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel
 
 #### Windows Drivers
 
-Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>3)</sup><br>
+Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>3)</sup>
+
+##### DriverEntry
 
 After a driver is loaded, first piece of code that is called is a <code>DriverEntry</code> function:
 
@@ -60,7 +62,9 @@ NTSTATUS DriverEntry(
     PUNICODE_STRING RegistryPath
 );
 ```
-The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code> structure filled out by the I/O manager during the driver loading process that holds information about the driver itself. I/O manager creates a <code>DRIVER_OBJECT</code> for every driver loaded in the system.<br>
+The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code> structure filled out by the I/O manager during the driver loading process that holds information about the driver itself. I/O manager creates a <code>DRIVER_OBJECT</code> for every driver loaded in the system.
+
+##### Devices
 
 The operating system represents devices by *device objects*. One or more device objects are associated with each device. Device objects serve as the target of all operations on the device. Devices are usually represented by multiple device objects - one for each driver that handles I/O requests for the device.<br>
 If a device wants to be accessible for user processes, a driver needs to define the device by creating a <code>DEVICE_OBJECT</code> structure and a symbolic link (symlink). One example is <code>C:\</code> symlink that represents storage device. We can check it with <code>WinObj</code> tool from SysInternals suite:
