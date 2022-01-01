@@ -52,13 +52,15 @@ In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel
 
 Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>3)</sup><br>
 
-After a driver is loaded, first piece of code that is called is **DriverEntry**:
-```cpp
+After a driver is loaded, first piece of code that is called is a **DriverEntry** function:
+```c++
 NTSTATUS DriverEntry(
     PDRIVER_OBJECT  DriverObject,
     PUNICODE_STRING RegistryPath
 );
 ```
+<span style="color:#00bfff">DriverObject</span> is a structure filled out by the I/O manager during the driver loading process. It holds information about the driver itself
+
 <br><br>
 Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.  
 IOCTL is generated with DeviceIoControl API in user-mode and is passed to the kernel-mode I/O Manager. I/O Manager creates I/O Request Packet (IRP), which is a kernel structure used to represent I/O request as it moves around the kernel system. IRP has all the information that the driver needs to perform a given action on an IO request, including the IOCTL.
