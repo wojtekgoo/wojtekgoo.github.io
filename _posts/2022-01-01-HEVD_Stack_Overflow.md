@@ -54,13 +54,13 @@ Driver is a software interacts with the kernel and/or controls hardware resource
 
 After a driver is loaded, first piece of code that is called is a <code>DriverEntry</code> function:
 
-```cplusplus
+```c
 NTSTATUS DriverEntry(
     PDRIVER_OBJECT  DriverObject,
     PUNICODE_STRING RegistryPath
 );
 ```
-The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code>structure filled out by the I/O manager during the driver loading process that holds information about the driver itself. I/O manager creates a <code>DRIVER_OBJECT</code> for every driver loaded in the system.<br><br>
+The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code> structure filled out by the I/O manager during the driver loading process that holds information about the driver itself. I/O manager creates a <code>DRIVER_OBJECT</code> for every driver loaded in the system.<br><br>
 
 The operating system represents devices by *device objects*. One or more device objects are associated with each device. Device objects serve as the target of all operations on the device. Devices are usually represented by multiple device objects - one for each driver that handles I/O requests for the device.<br>
 If a device wants to be accessible for user processes, a driver needs to create a <code>DEVICE_OBJECT</code> and a symbolic link (symlink) for it. One example is <code>C:\</code> symlink that represents storage device. We can check it with <code>WinObj</code> tool from SysInternals suite:
