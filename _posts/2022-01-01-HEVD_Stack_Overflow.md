@@ -60,7 +60,13 @@ NTSTATUS DriverEntry(
     PUNICODE_STRING RegistryPath
 );
 ```
-The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code>structure filled out by the I/O manager during the driver loading process that holds information about the driver itself.
+The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code>structure filled out by the I/O manager during the driver loading process that holds information about the driver itself. I/O manager creates a <code>DRIVER_OBJECT</code> for every driver loaded in the system.<br><br>
+
+The operating system represents devices by *device objects*. One or more device objects are associated with each device. Device objects serve as the target of all operations on the device. Devices are usually represented by multiple device objects - one for each driver that handles I/O requests for the device.<br>
+If a device wants to be accessible for user processes, a driver needs to create a <code>DEVICE_OBJECT</code> and a symbolic link (symlink) for it. One example is <code>C:\</code> symlink that represents storage device. We can check it with <code>WinObj</code> tool from SysInternals suite:
+
+![Symlink in WinObj](/assets/img/WinObj_symlink.png)
+_WinObj showing symlink for a storage device_
 
 <br><br>
 Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.  
