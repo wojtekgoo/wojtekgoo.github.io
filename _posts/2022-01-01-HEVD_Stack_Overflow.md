@@ -66,15 +66,14 @@ The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</
 
 ##### <span class="myheader">Devices</span>
 
-The operating system represents devices by *device objects*. Device objects serve as the target of all operations on the device. Devices are usually represented by multiple device objects - one for each driver that handles I/O requests for the device.<br>
+The operating system represents devices by *device objects*. They serve as the target of all operations on the device. A driver creates device object for every device the driver handles. So if a device is served by multiple drivers, each one will create its own device object.
 If a device wants to be accessible for user processes, a driver needs to define the device by creating a <code>DEVICE_OBJECT</code> structure and a symbolic link (symlink). One example is <code>C:\</code> symlink that represents storage device. We can check it with <code>WinObj</code> tool from SysInternals suite:
 
 ![Symlink in WinObj](/assets/img/WinObj_symlink.png)
 _WinObj showing symlink for a storage device_
 
+##### <span class="myheader">IOCTL and IRP</span>
 
-
-<br><br>
 Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.  
 IOCTL is generated with DeviceIoControl API in user-mode and is passed to the kernel-mode I/O Manager. I/O Manager creates I/O Request Packet (IRP), which is a kernel structure used to represent I/O request as it moves around the kernel system. IRP has all the information that the driver needs to perform a given action on an IO request, including the IOCTL.
 So when a program issues an IOCTL to a device, an IRP is created in kernel space to reflect that request.  
