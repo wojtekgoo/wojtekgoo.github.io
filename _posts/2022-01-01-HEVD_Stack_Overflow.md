@@ -69,9 +69,9 @@ The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</
 ![DRIVER_OBJECT](/assets/img/windbg_driver_object.png)
 *DRIVER_OBJECT structure*
 
-One of the most important fields in the <code>DriverObject</code> structure is <code>MajorFunctions</code> field which is an array of function pointers.
+One of the most important fields in the <code>DriverObject</code> structure is <code>MajorFunctions</code> which is an array of function pointers.
 <br>
-Whenever driver receives request, it invokes relevant routine pointed by index from the array to - more on that later. 
+Whenever driver receives request, it invokes relevant routine pointed by index from the array - more on that later. 
 
 ##### <span class="myheader">Devices</span>
 
@@ -96,16 +96,22 @@ _IRP structure_
 
 In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.<sup>4)</sup>
 
-![IOCTL flow](/assets/img/IOCTL_flow.png)
-_IOCTL flow around the system_
-
 ##### <span class="myheader">User-Kernel communication</span>
 
 Now when we understand most important data objects, we can try to grasp how requests are passed from the user-mode apps to the kernel-mode drivers.
 
-When 
+When user-mode code calls some kernel32.dll API like <code>ReadFile</code> or <code>DeviceIoControl</code>, the request is transferred to ntdll.dll
+<br>
+Ntdll prepares registers, sets the stack and calls SYSENTER (in x86) or SYSCALL (x64)instruction that switches to kernel mode. The request is handled then by the I/O Manager, that creates IRP packet and sends it to the appropriate driver.
+<br>
+The IRP packet contains a major function code that tells the driver how to act and which specific function from the <code>MajorFunctions</code> array to call.
+There are many major function codes and each of them corresponds with a user-mode function, but the most important ones are:
+* <code>IRP_MJ_CREATE</code>, relates to user-mode <code>CreateFile</code>
+* <code>IRP_MJ_READ</code>, relates to <code>ReadFile</code>
+* <code>IRP_MJ_DEVICE_CONTROL</code>, relevant to <code>DeviceIoControl</code>
 
-
+![IOCTL flow](/assets/img/IOCTL_flow.png)
+_IOCTL flow around the system_
 
 ## <span class="myheader">Vulnerability<span>
 
