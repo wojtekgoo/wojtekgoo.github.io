@@ -45,12 +45,14 @@ All code that runs in kernel mode shares a single virtual address space. This me
 
 #### <span class="myheader">Memory regions</span>
 
-In User Mode there are two main memory regions used for functions implementation: stack and heap.<br>
+In User Mode there are two main memory regions used for functions implementation: stack and heap.
+
 In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel pool, which played similar role to the userland heap.<sup>2)</sup>
 
 #### <span class="myheader">Windows Drivers</span>
 
-Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>3)</sup>
+Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. 
+You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>3)</sup>
 
 ##### <span class="myheader">DriverEntry</span>
 
@@ -75,7 +77,7 @@ _WinObj showing symlink for a storage device_
 
 ##### <span class="myheader">IOCTL and IRP</span>
 
-Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.  
+Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.
 IOCTL is generated with <code>DeviceIoControl</code> API in user-mode and is passed to the kernel-mode I/O Manager.
 
 Windows I/O Manager takes the IOCTL and builds **I/O Request Packet (IRP)** to describe I/O request to kernel-mode components and determine which device should process the request. IRP is a kernel structure used to represent I/O request as it moves around the kernel system. It has all the information that the driver needs to perform a given action on an IO request.
