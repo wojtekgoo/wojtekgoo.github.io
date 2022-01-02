@@ -51,7 +51,7 @@ In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel
 
 #### <span class="myheader">Windows Drivers</span>
 
-Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa. 
+Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa.<br>
 You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>3)</sup>
 
 ##### <span class="myheader">DriverEntry</span>
@@ -66,6 +66,13 @@ NTSTATUS DriverEntry(
 ```
 The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code> structure filled out by the I/O manager during the driver loading process that holds information about the driver itself. I/O manager creates a <code>DRIVER_OBJECT</code> for every driver loaded in the system.
 
+![DRIVER_OBJECT](/assets/img/windbg_driver_object.png)
+*DRIVER_OBJECT structure*
+
+One of the most important fields in the <code>DriverObject</code> structure is <code>MajorFunctions</code> field which is an array of function pointers.
+<br>
+Whenever driver receives request, it invokes relevant routine pointed by index from the array to - more on that later. 
+
 ##### <span class="myheader">Devices</span>
 
 The operating system represents devices by *device objects*. They serve as the target of all operations on the device. A driver creates device object for every device the driver handles. So if a device is served by multiple drivers, each one will create its own device object.
@@ -77,19 +84,27 @@ _WinObj showing symlink for a storage device_
 
 ##### <span class="myheader">IOCTL and IRP</span>
 
-Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into API. IOCTLs are data structures with several fields, containing information what action hardware needs to take.
-IOCTL is generated with <code>DeviceIoControl</code> API in user-mode and is passed to the kernel-mode I/O Manager.
+Drivers receive requests from userland in form of standard APIs (like ReadFile or WriteFile) or I/O Control Codes (IOCTL), if the request does not fit into standard API. IOCTLs are 32 bit integers that encodes information what action hardware needs to take.
+IOCTL is generated with <code>DeviceIoControl</code> API located in kernel32.dll in user-mode and is passed to the kernel-mode I/O Manager.
 
-Windows I/O Manager takes the IOCTL and builds **I/O Request Packet (IRP)** to describe I/O request to kernel-mode components and determine which device should process the request. IRP is a kernel structure used to represent I/O request as it moves around the kernel system. It has all the information that the driver needs to perform a given action on an IO request.
-So when a program issues an IOCTL to a device, an IRP is created in kernel space to reflect that request.
+Windows I/O Manager takes the standard API request or IOCTL and builds **I/O Request Packet (IRP)** to describe the I/O request to kernel-mode components and determine which device should process the request. IRP is a kernel structure used to represent I/O request as it moves around the kernel system. It has all the information that the driver needs to perform a given action on an I/O request.
+<br>
+So when a program issues a request to a device, an IRP is created in kernel space to reflect that request.
 
 ![IRP structure](/assets/img/windbg_irp_structure.png)
 _IRP structure_
 
-In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.<sup>4)</sup><br>
+In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.<sup>4)</sup>
 
 ![IOCTL flow](/assets/img/IOCTL_flow.png)
 _IOCTL flow around the system_
+
+##### <span class="myheader">User-Kernel communication</span>
+
+Now when we understand most important data objects, we can try to grasp how requests are passed from the user-mode apps to the kernel-mode drivers.
+
+When 
+
 
 
 ## <span class="myheader">Vulnerability<span>
