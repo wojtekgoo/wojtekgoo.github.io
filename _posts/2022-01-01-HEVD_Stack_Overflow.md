@@ -119,7 +119,7 @@ The source code for the vulnerable method is located in [StackOverflow.c](https:
 
 
 
-<sup>1)</sup> https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/concepts-and-knowledge-for-all-driver-developers
+<sup>1)</sup> https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/concepts-and-knowledge-for-all-driver-developers<br>
 <sup>2)</sup> In March 2019 Microsoft brought Segment Heap used in user land to the kernel<br>
 <sup>3)</sup> https://voidsec.com/exploiting-system-mechanic-driver/<br>
 <sup>4)</sup> https://stackoverflow.com/questions/18901467/what-is-the-difference-between-an-ioctl-and-an-irp
