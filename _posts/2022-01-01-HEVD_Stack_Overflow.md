@@ -102,7 +102,7 @@ Now when we understand most important data objects, we can try to grasp how requ
 
 When user-mode code calls some kernel32.dll API like <code>ReadFile</code> or <code>DeviceIoControl</code>, the request is transferred to ntdll.dll
 <br>
-Ntdll prepares registers, sets the stack and calls SYSENTER (in x86) or SYSCALL (x64)instruction that switches to kernel mode. The request is handled then by the I/O Manager, that creates IRP packet and sends it to the appropriate driver.
+Ntdll prepares registers, sets the stack and calls SYSENTER (in x86) or SYSCALL (x64) instruction that switches to kernel mode. The request is handled then by the I/O Manager, that creates IRP packet and sends it to the appropriate driver.
 <br>
 The IRP packet contains a major function code that tells the driver how to act and which specific function from the <code>MajorFunctions</code> array to call.
 There are many major function codes and each of them corresponds with a user-mode function, but the most important ones are:
