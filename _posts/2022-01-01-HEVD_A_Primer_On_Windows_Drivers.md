@@ -113,11 +113,9 @@ There are many major function codes and each of them corresponds with a user-mod
 ![IOCTL flow](/assets/img/IOCTL_flow.png)
 _IOCTL flow around the system_
 
-## <span class="myheader">Vulnerability<span>
+Equipped with this basic knowledge, let's move on in the next article to the analysis of the first vulnerability in HEVD - [the Stack Overflow](https://wojtekgoo.github.io/posts/HEVD_Stack_Overflow/).
 
-The source code for the vulnerable method is located in [StackOverflow.c](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/blob/master/Exploit/StackOverflow.c)
-
-
+## <span class="myheader">References<span>
 
 <sup>1)</sup> https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/concepts-and-knowledge-for-all-driver-developers<br>
 <sup>2)</sup> In March 2019 Microsoft brought Segment Heap used in user land to the kernel<br>
