@@ -1,8 +1,8 @@
 ---
 layout: post
-title: "HEVD: A primer on Windows drivers"
-date: 2022-01-01 09:00:00 +0100
-categories: [HEVD, Intro to Windows drivers]
+title: "HEVD: Stack Overflow exploitation"
+date: 2022-01-04 09:00:00 +0100
+categories: [HEVD, Stack Overflow]
 tags: [exploit, drivers, x86, shellcoding, kernel exploitation]
 ---
 
