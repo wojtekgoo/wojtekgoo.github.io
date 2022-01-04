@@ -3,7 +3,7 @@ layout: post
 title: "HEVD: A primer on Windows drivers"
 date: 2022-01-01 09:00:00 +0100
 categories: [HEVD, Intro to Windows drivers]
-tags: [exploit, drivers, x86, shellcoding, kernel exploitation]
+tags: [drivers, x86]
 ---
 
 
@@ -21,13 +21,13 @@ To set up your lab, read e.g. [this](https://fluidattacks.com/blog/windows-kerne
 
 ## <span class="myheader">Windows internals</span>
 
-Before I deep-dive into the exploitation, below is small refresher of some related concepts. 
+Before we deep-dive into the driver exploitation, I made a small refresher of some concepts I think are most relevant to the topic. Understanding in general what role a driver has and how it receives requests from the user is crucial to learn how to find vulnerabilities in the real-world code. This is by no means exhaustive list of topics but will make sure we are on the same page before we continue.
 
 #### <span class="myheader">Modes</span>
 
 A processor in computer with Windows operates in two modes: *user mode* and *kernel mode*. It switches between them depending on what type of code is running. Applications run in user mode and core operating system components run in kernel mode.
 + **User Mode**: here, the executing code has limited power - it cannot for example access hardware directly or reference every memory address. To do this, code running in UM must use special APIs that will handle it.
-+ **Kernel Mode**: here, the executing code has unrestricted access to the hardware, can use any CPU instruction or reference any memory address[^1]<sup>)</sup>
++ **Kernel Mode**: here, the executing code has unrestricted access to the hardware, can use any CPU instruction or reference any memory address[^1]
 
 System drivers, like HEVD, operate in Kernel Mode. It means that if we are able to discover and exploit a vulnerability in the driver, we can force it to execute a piece of malicious code that we placed in UM (like shellcode) with high privileges stemming from the KM.
 
@@ -47,12 +47,13 @@ All code that runs in kernel mode shares a single virtual address space. This me
 
 In User Mode there are two main memory regions used for functions implementation: stack and heap.
 
-In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel pool, which played similar role to the userland heap.<sup>2)</sup>
+In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel pool, which played similar role to the userland heap.[^2]
 
 #### <span class="myheader">Windows Drivers</span>
 
-Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa.<br>
-You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.<sup>3)</sup>
+Driver is a software interacts with the kernel and/or controls hardware resources. Drivers mainly let OS and hardware communicate with each other. It sits and waits for the system to call it when it needs something, like starting/using/controlling a hardware device. Then, the driver interprets incoming OS request and translates it into instructions understood by the device and vice versa.
+<br>
+You can think of a driver as a DLL that is loaded into the kernel address space and executes with the same privilege as the kernel. A driver does not have a main execution thread; it contains code that can be called by the kernel when certain events occur. Such events may be interrupts or processes requiring the operating system to do stuff; the kernel handles those interrupts and may execute appropriate drivers to fulfill the requests.[^3]
 
 ##### <span class="myheader">DriverEntry</span>
 
@@ -94,7 +95,7 @@ So when a program issues a request to a device, an IRP is created in kernel spac
 ![IRP structure](/assets/img/windbg_irp_structure.png)
 _IRP structure_
 
-In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.<sup>4)</sup>
+In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.[^4]
 
 ##### <span class="myheader">User-Kernel communication</span>
 
@@ -117,10 +118,7 @@ Equipped with this basic knowledge, let's move on in the next article to the ana
 
 ## <span class="myheader">References<span>
 
-<sup>1)</sup> https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/concepts-and-knowledge-for-all-driver-developers<br>
-<sup>2)</sup> In March 2019 Microsoft brought Segment Heap used in user land to the kernel<br>
-<sup>3)</sup> https://voidsec.com/exploiting-system-mechanic-driver/<br>
-<sup>4)</sup> https://stackoverflow.com/questions/18901467/what-is-the-difference-between-an-ioctl-and-an-irp
-
-
-[^1]<sup>)</sup>: https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/concepts-and-knowledge-for-all-driver-developers
+[^1]: https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/concepts-and-knowledge-for-all-driver-developers
+[^2]: In March 2019 Microsoft brought Segment Heap used in user land to the kernel
+[^3]: https://voidsec.com/exploiting-system-mechanic-driver/
+[^4]: https://stackoverflow.com/questions/18901467/what-is-the-difference-between-an-ioctl-and-an-irp
