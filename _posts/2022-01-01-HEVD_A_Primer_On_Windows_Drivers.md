@@ -35,7 +35,13 @@ System drivers, like HEVD, operate in Kernel Mode. It means that if we are able 
 
 When an application starts, Windows creates a *process* for it. Think of a process as a container that holds all the necessary information for application to run. If the application runs in user-mode, process provides the app with a private virtual address space. 
 
+#### <span class="myheader">Thread</span>
+
+TODO
+
 #### <span class="myheader">Virtual address space</span>
+
+TODO: virtual addr space definition
 
 Because a user-mode application's virtual address space is private, one application cannot alter data that belongs to another application. Each application runs in isolation, and if an application crashes, the crash is limited to that one application. Other applications and the operating system are not affected by the crash.
 
@@ -45,9 +51,15 @@ All code that runs in kernel mode shares a single virtual address space. This me
 
 #### <span class="myheader">Memory regions</span>
 
-In User Mode there are two main memory regions used for functions implementation: stack and heap.
+In User Mode there are two main memory regions used for functions implementation: *stack* and *heap*.
 
-In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel pool, which played similar role to the userland heap.[^2]
+Stack is a region of memory where data is added and removed in such way that data added last will be removed first and data added first will be removed in the end (Last-In-First-Out queue). Imagine building a tower from wooden bricks. If you want to move a piece at the bottom without collapsing whole tower, first you need to remove all bricks that you added later that reside on the top.
+<br>
+In most Operating Systems each thread has its own stack region in memory. Functions executed by the thread may store some of their local data on the stack and have to remove all the data placed on the stack when they finish execution.
+
+TODO: define heap
+
+In Kernel Mode, up to Windows 10 19H1 (1903), there were kernel stack and kernel pool which played similar role to the userland heap.[^2]
 
 #### <span class="myheader">Windows Drivers</span>
 
