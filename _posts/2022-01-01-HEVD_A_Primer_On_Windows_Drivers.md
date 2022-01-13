@@ -126,7 +126,7 @@ There are many major function codes and each of them corresponds with a user-mod
 ![IOCTL flow](/assets/img/IOCTL_flow.png)
 _IOCTL flow around the system_
 
-Equipped with this basic knowledge, let's move on in the next article to the analysis of the first vulnerability in HEVD - [the Stack Overflow](https://wojtekgoo.github.io/posts/HEVD_Stack_Overflow/).
+Equipped with this basic knowledge, let's move on to the next article and analyze the first vulnerability in HEVD - [the Stack Overflow](https://wojtekgoo.github.io/posts/HEVD_Stack_Overflow/).
 
 ## <span class="myheader">References<span>
 
