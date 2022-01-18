@@ -77,7 +77,7 @@ Let's have a look at the source code first. <code>IrpDeviceIoCtlHandler</code> f
 </tr>
 <tr>
 <td>
-
+<pre>
 ```c
 /// <summary>
 /// IRP Device IoCtl Handler
@@ -112,10 +112,10 @@ IrpDeviceIoCtlHandler(
             DbgPrint("****** HEVD_IOCTL_BUFFER_OVERFLOW_STACK ******\n");
             break;
 ```
-
+</pre>
 </td>
 <td>
-
+<pre>
 ```c
 //
 // IOCTL Definitions
@@ -125,42 +125,17 @@ IrpDeviceIoCtlHandler(
 #define HEVD_IOCTL_BUFFER_OVERFLOW_STACK_GS                      IOCTL(0x801)
 #define HEVD_IOCTL_ARBITRARY_WRITE                               IOCTL(0x802)
 ```
-
-</td>
-</tr>
-</table>
-
-
-</tr>
-<tr>
-<td>
-<pre>
-{
-  "id": 1,
-  "username": "joe",
-  "email": "joe@example.com",
-  "order_id": "3544fc0"
-}
 </pre>
-</td>
-<td>
-
-```json
-{
-  "id": 5,
-  "username": "mary",
-  "email": "mary@example.com",
-  "order_id": "f7177da"
-}
-```
-
 </td>
 </tr>
 </table>
 
 This is how it looks in the disassembled code:
 
-Solarized dark             |  Solarized Ocean
-:-------------------------:|:-------------------------:
-![](/assets/img/ida_IrpDeviceIoCtlHandler.png)  |  ![](/assets/img/ida_jumptable_IrpDeviceIoCtlHandler.png)
-_switch statement_                              |_switch jumptable_
+![](/assets/img/ida_IrpDeviceIoCtlHandler.png)  
+_switch statement_
+
+0x222003 is deducted from the IOCTL value held in ECX and result is loaded into EAX register. Then, it is used in the **jmp** instruction to jump to the correct offset from the jump table:
+
+![](/assets/img/ida_jumptable_IrpDeviceIoCtlHandler.png)
+_switch jumptable_
