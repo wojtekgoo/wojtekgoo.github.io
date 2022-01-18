@@ -24,7 +24,7 @@ _HEVD loaded in the debugee_
 
 ## <span class="myheader">Vulnerability</span>
 
-SOME TEXT
+Vulnerability exists in the 
 
 ## <span class="myheader">Exploitation</span>
 
