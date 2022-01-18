@@ -26,7 +26,7 @@ _HEVD loaded in the debugee_
 
 Vulnerability exists in the [BufferOverflowStack.c](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/blob/master/Driver/HEVD/Windows/BufferOverflowStack.c) file:
 
-```c++
+```c
 #ifdef SECURE
         //
         // Secure Note: This is secure because the developer is passing a size
@@ -50,7 +50,7 @@ Vulnerability exists in the [BufferOverflowStack.c](https://github.com/hacksyste
 
 Inspecting <code>else</code> condition, we notice that the <code>RtlCopyMemory</code> function copies full length of the supplied UserBuffer to the KernelBuffer leading to the stack buffer overflow vulnerability, as we are able to overwrite information on the stack and diverge the code execution from a current path to e.g. a shellcode. <code>Size</code> of the user supplied data is not validated in any way:
 
-```c++
+```c
 Size = IrpSp->Parameters.DeviceIoControl.InputBufferLength;
 ```
 
@@ -67,16 +67,18 @@ _Stack Buffer Overflow path in IDA Pro_
 Based on the information in the packet, function will redirect execution to the appropriate IOCTL handler - <code>BufferOverflowStackIoCtlHandler</code> in this case - which is a wrapper for <code>TriggerBufferOverflowStack</code> that contains the vulnerable code as described in the 'Vulnerability' section above.
 <br>
 Our next task is to determine what IOCTL needs to be send to trigger the vulnerability.
+<br>
+Let's have a look at the source code first. <code>IrpDeviceIoCtlHandler</code> function uses *switch* statement to transfer control to a correct handler, depending on the IOCTL received:
 
 <table>
 <tr>
-<th><pre> [HackSysExtremeVulnerableDriver.c](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/blob/master/Driver/HEVD/Windows/HackSysExtremeVulnerableDriver.c) </pre></th>
-<th><pre> [HackSysExtremeVulnerableDriver.h](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/blob/master/Driver/HEVD/Windows/HackSysExtremeVulnerableDriver.h) </pre> </th>
+<th><pre> HackSysExtremeVulnerableDriver.c </pre></th>
+<th><pre> HackSysExtremeVulnerableDriver.h </pre></th>
 </tr>
 <tr>
 <td>
 
-```c++
+```c
 /// <summary>
 /// IRP Device IoCtl Handler
 /// </summary>
@@ -114,7 +116,7 @@ IrpDeviceIoCtlHandler(
 </td>
 <td>
 
-```c++
+```c
 //
 // IOCTL Definitions
 //
