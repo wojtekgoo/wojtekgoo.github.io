@@ -67,75 +67,22 @@ _Stack Buffer Overflow path in IDA Pro_
 Based on the information in the packet, function will redirect execution to the appropriate IOCTL handler - <code>BufferOverflowStackIoCtlHandler</code> in this case - which is a wrapper for <code>TriggerBufferOverflowStack</code> that contains the vulnerable code as described in the 'Vulnerability' section above.
 <br>
 Our next task is to determine what IOCTL needs to be send to trigger the vulnerability.
-<br>
+
+### <span class="myheader">IOCTL</span>
+
 Let's have a look at the source code first. <code>IrpDeviceIoCtlHandler</code> function uses *switch* statement to transfer control to a correct handler, depending on the IOCTL received:
 
-<table>
-<tr>
-<th><pre> HackSysExtremeVulnerableDriver.c </pre></th>
-<th><pre> HackSysExtremeVulnerableDriver.h </pre></th>
-</tr>
-<tr>
-<td>
-<pre>
-```c
-/// <summary>
-/// IRP Device IoCtl Handler
-/// </summary>
-/// <param name="DeviceObject">The pointer to DEVICE_OBJECT</param>
-/// <param name="Irp">The pointer to IRP</param>
-/// <returns>NTSTATUS</returns>
-NTSTATUS
-IrpDeviceIoCtlHandler(
-    _In_ PDEVICE_OBJECT DeviceObject,
-    _Inout_ PIRP Irp
-)
-{
-    ULONG IoControlCode = 0;
-    PIO_STACK_LOCATION IrpSp = NULL;
-    NTSTATUS Status = STATUS_NOT_SUPPORTED;
-
-    UNREFERENCED_PARAMETER(DeviceObject);
-    PAGED_CODE();
-
-    IrpSp = IoGetCurrentIrpStackLocation(Irp);
-
-    if (IrpSp)
-    {
-        IoControlCode = IrpSp->Parameters.DeviceIoControl.IoControlCode;
-
-        switch (IoControlCode)
-        {
-        case HEVD_IOCTL_BUFFER_OVERFLOW_STACK:
-            DbgPrint("****** HEVD_IOCTL_BUFFER_OVERFLOW_STACK ******\n");
-            Status = BufferOverflowStackIoctlHandler(Irp, IrpSp);
-            DbgPrint("****** HEVD_IOCTL_BUFFER_OVERFLOW_STACK ******\n");
-            break;
-```
-</pre>
-</td>
-<td>
-<pre>
-```c
-//
-// IOCTL Definitions
-//
-
-#define HEVD_IOCTL_BUFFER_OVERFLOW_STACK                         IOCTL(0x800)
-#define HEVD_IOCTL_BUFFER_OVERFLOW_STACK_GS                      IOCTL(0x801)
-#define HEVD_IOCTL_ARBITRARY_WRITE                               IOCTL(0x802)
-```
-</pre>
-</td>
-</tr>
-</table>
+HackSysExtremeVulnerableDriver.c             |  HackSysExtremeVulnerableDriver.h
+:-------------------------:|:-------------------------:
+![](/assets/img/code_IrpDeviceIoCtlHandler.png)  |  ![](/assets/img/code_IOCTL_definitions.png)
+:_source code of the IrpDeviceIoCtlHandler_:
 
 This is how it looks in the disassembled code:
 
-![](/assets/img/ida_IrpDeviceIoCtlHandler.png)  
-_switch statement_
+![](/assets/img/ida_stackbo_flow.png)  
+_switch statement and IOCTL handler_
 
-0x222003 is deducted from the IOCTL value held in ECX and result is loaded into EAX register. Then, it is used in the **jmp** instruction to jump to the correct offset from the jump table:
+<code>0x222003</code> is deducted from the IOCTL value held in ECX and the result is loaded into EAX register. Then, it is used in the **jmp** instruction to jump to the correct offset from the jump table. In the bottom we see code at the offset that calls <code>BufferOverflowStackIoctlHandler</code>.
 
-![](/assets/img/ida_jumptable_IrpDeviceIoCtlHandler.png)
-_switch jumptable_
+
+### <span class="myheader">Exploitation</span>
