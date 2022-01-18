@@ -158,4 +158,9 @@ IrpDeviceIoCtlHandler(
 </tr>
 </table>
 
+This is how it looks in the disassembled code:
 
+Solarized dark             |  Solarized Ocean
+:-------------------------:|:-------------------------:
+![](/assets/img/ida_IrpDeviceIoCtlHandler.png)  |  ![](/assets/img/ida_jumptable_IrpDeviceIoCtlHandler.png)
+_switch statement_                              |_switch jumptable_
