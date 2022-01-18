@@ -48,9 +48,84 @@ Vulnerability exists in the [BufferOverflowStack.c](https://github.com/hacksyste
         RtlCopyMemory((PVOID)KernelBuffer, UserBuffer, Size);
 ```
 
-Inspecting <code>else</code> condition, we notice that the <code>RtlCopyMemory</code> function copies full length of the supplied UserBuffer to the KernelBuffer leading to the stack buffer overflow vulnerability, as we are able to overwrite information on the stack and diverge the code execution from a current path to e.g. a shellcode.
-In the <code>SECURE</code> version, this is taken care of as max len of copied data is not larger than KernelBuffer itself. 
+Inspecting <code>else</code> condition, we notice that the <code>RtlCopyMemory</code> function copies full length of the supplied UserBuffer to the KernelBuffer leading to the stack buffer overflow vulnerability, as we are able to overwrite information on the stack and diverge the code execution from a current path to e.g. a shellcode. <code>Size</code> of the user supplied data is not validated in any way:
+
+```c++
+Size = IrpSp->Parameters.DeviceIoControl.InputBufferLength;
+```
+
+In the <code>SECURE</code> version, this is taken care of as max length of the copied data is not larger than the KernelBuffer itself as specified by the <code>sizeof</code> operator. 
 
 ## <span class="myheader">Exploitation</span>
 
-SOME TEXT
+To exploit this vulnerability we need to make the driver code follow the correct execution flow and reach the vulnerable code. Below we can observe in IDA Pro what is the path we need to take:
+
+![IDA Stack BO path](/assets/img/ida_stackbo_path.png)
+_Stack Buffer Overflow path in IDA Pro_
+
+<code>DriverEntry</code> is the first piece of code called after a driver is loaded. In the code there is also <code>IrpDeviceIoCtlHandler</code> function defined that handles incoming IOCTL control codes inside IRP packets.
+Based on the information in the packet, function will redirect execution to the appropriate IOCTL handler - <code>BufferOverflowStackIoCtlHandler</code> in this case - which is a wrapper for <code>TriggerBufferOverflowStack</code> that contains the vulnerable code as described in the 'Vulnerability' section above.
+<br>
+Our next task is to determine what IOCTL needs to be send to trigger the vulnerability.
+
+<table>
+<tr>
+<th><pre> [HackSysExtremeVulnerableDriver.c](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/blob/master/Driver/HEVD/Windows/HackSysExtremeVulnerableDriver.c) </pre></th>
+<th><pre> [HackSysExtremeVulnerableDriver.h](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/blob/master/Driver/HEVD/Windows/HackSysExtremeVulnerableDriver.h) </pre> </th>
+</tr>
+<tr>
+<td>
+
+```c++
+/// <summary>
+/// IRP Device IoCtl Handler
+/// </summary>
+/// <param name="DeviceObject">The pointer to DEVICE_OBJECT</param>
+/// <param name="Irp">The pointer to IRP</param>
+/// <returns>NTSTATUS</returns>
+NTSTATUS
+IrpDeviceIoCtlHandler(
+    _In_ PDEVICE_OBJECT DeviceObject,
+    _Inout_ PIRP Irp
+)
+{
+    ULONG IoControlCode = 0;
+    PIO_STACK_LOCATION IrpSp = NULL;
+    NTSTATUS Status = STATUS_NOT_SUPPORTED;
+
+    UNREFERENCED_PARAMETER(DeviceObject);
+    PAGED_CODE();
+
+    IrpSp = IoGetCurrentIrpStackLocation(Irp);
+
+    if (IrpSp)
+    {
+        IoControlCode = IrpSp->Parameters.DeviceIoControl.IoControlCode;
+
+        switch (IoControlCode)
+        {
+        case HEVD_IOCTL_BUFFER_OVERFLOW_STACK:
+            DbgPrint("****** HEVD_IOCTL_BUFFER_OVERFLOW_STACK ******\n");
+            Status = BufferOverflowStackIoctlHandler(Irp, IrpSp);
+            DbgPrint("****** HEVD_IOCTL_BUFFER_OVERFLOW_STACK ******\n");
+            break;
+```
+
+</td>
+<td>
+
+```c++
+//
+// IOCTL Definitions
+//
+
+#define HEVD_IOCTL_BUFFER_OVERFLOW_STACK                         IOCTL(0x800)
+#define HEVD_IOCTL_BUFFER_OVERFLOW_STACK_GS                      IOCTL(0x801)
+#define HEVD_IOCTL_ARBITRARY_WRITE                               IOCTL(0x802)
+```
+
+</td>
+</tr>
+</table>
+
+
