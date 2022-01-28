@@ -107,7 +107,12 @@ So when a program issues a request to a device, an IRP is created in kernel spac
 ![IRP structure](/assets/img/windbg_irp_structure.png)
 _IRP structure_
 
-In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.[^4]
+IOCTL control codes have following layout[^4]
+
+![IOCTL layout](/assets/img/ioctl_layout.png)
+_IOCTL layout_
+
+In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.[^5]
 
 ##### <span class="myheader">User-Kernel communication</span>
 
@@ -133,4 +138,5 @@ Equipped with this basic knowledge, let's move on to the next article and analyz
 [^1]: https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/concepts-and-knowledge-for-all-driver-developers
 [^2]: In March 2019 Microsoft brought Segment Heap used in user land to the kernel
 [^3]: https://voidsec.com/exploiting-system-mechanic-driver/
-[^4]: https://stackoverflow.com/questions/18901467/what-is-the-difference-between-an-ioctl-and-an-irp
+[^4]: https://docs.microsoft.com/en-us/windows-hardware/drivers/kernel/defining-i-o-control-codes
+[^5]: https://stackoverflow.com/questions/18901467/what-is-the-difference-between-an-ioctl-and-an-irp

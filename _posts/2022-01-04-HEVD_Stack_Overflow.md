@@ -76,22 +76,22 @@ Let's have a look at the source code first.
 <br>
 <code>IrpDeviceIoCtlHandler</code> function uses *switch* statement to transfer control to a correct handler, depending on the IOCTL received:
 
-![IrpDeviceIoCtlHandler source code](/assets/img/code_IrpDeviceIoCtlHandler.png)  
+![IrpDeviceIoCtlHandler source code](/assets/img/code_IrpDeviceIoCtlHandler.png)
 _source code of the IrpDeviceIoCtlHandler_
 
 ![IOCTL definitions](/assets/img/code_IOCTL_definitions.png)
 _IOCTL definitions_
 
-This is how it looks in the disassembled code in IDA:
+This is how the disassembled function code looks in IDA:
 
-![IrpDeviceIoCtlHandler](/assets/img/ida_stackbo_flow.png)  
+![IrpDeviceIoCtlHandler](/assets/img/ida_stackbo_flow.png)
 _switch statement and IOCTL handler_
 
-<code>0x222003</code> is deducted from the IOCTL value held in ECX and the result is loaded into EAX register (1). If the difference is larger than <code>0x6C</code>, program returns "[-] Invalid IOCTL Code: " message. It means, that there are 109 possible IOCTL codes that will be accepted by the program, in the range <code>0x222003 - 0x22206f</code>.
+<code>0x222003</code> is deducted from the IOCTL value held in ECX and the result is loaded into EAX register (1). If the difference is larger than <code>0x6C</code>, program jumps to a different part of code to return "[-] Invalid IOCTL Code: " message. It means, there are 109 possible IOCTL codes that will be accepted by the program, in the range <code>0x222003 - 0x22206f</code>.
 <br>
 If the difference is smaller than <code>0x6C</code>, the IOCTL is used in the *jmp* instruction to jump to the correct offset from the jump table (2). In the bottom of the picture, we see code at this offset that calls <code>BufferOverflowStackIoctlHandler</code> and <code>TriggerBufferOverflowStack</code> in the end (3).
 
-![WrongIOCTL](/assets/img/ida_invalidioctl.png)  
+![WrongIOCTL](/assets/img/ida_invalidioctl.png)
 _Incorrect IOCTL code_
 
 
