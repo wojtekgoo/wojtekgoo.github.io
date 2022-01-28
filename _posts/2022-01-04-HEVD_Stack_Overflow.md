@@ -11,15 +11,17 @@ tags: [exploit, drivers, x86, shellcoding, kernel exploitation]
 
 In this post we will be exploiting the Stack Overflow vulnerability in the [HEVD](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver) driver. Before that, I recommend to read the previous blogpost where I explain some basic concepts.
 
-To load the driver, download first the pre-built executable from [here](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/releases) (or build it from source if you have too much time). Then, download and run the [OSR Driver Loader](https://www.osronline.com/article.cfm%5earticle=157.htm) to load the driver in the debugee:
+To load the driver, we download first the pre-built executable from [here](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/releases) (or build it from source if you have too much time). Then, we download and run the [OSR Driver Loader](https://www.osronline.com/article.cfm%5earticle=157.htm) to load the driver in the debugee:
 
 ![OSR tool](/assets/img/osr_tool.png)
 _OSR Driver Loader_
 
-If all went well, you should see a new driver in the list of loaded modules:
+If all went well, we should see a new driver in the list of loaded modules:
 
 ![HEVD loaded](/assets/img/windbg_loaded_hevd.png)
 _HEVD loaded in the debugee_
+
+Red line marks memory address where the driver was loaded.
 
 
 ## <span class="myheader">Vulnerability</span>
@@ -65,26 +67,32 @@ _Stack Buffer Overflow path in IDA Pro_
 
 <code>DriverEntry</code> is the first piece of code called after a driver is loaded. In the code there is also <code>IrpDeviceIoCtlHandler</code> function defined that handles incoming IOCTL control codes inside IRP packets.
 Based on the information in the packet, function will redirect execution to the appropriate IOCTL handler - <code>BufferOverflowStackIoCtlHandler</code> in this case - which is a wrapper for <code>TriggerBufferOverflowStack</code> that contains the vulnerable code as described in the 'Vulnerability' section above.
-<br>
+
 Our next task is to determine what IOCTL needs to be send to trigger the vulnerability.
 
 ### <span class="myheader">IOCTL</span>
 
-Let's have a look at the source code first. 
+Let's have a look at the source code first.
+<br>
 <code>IrpDeviceIoCtlHandler</code> function uses *switch* statement to transfer control to a correct handler, depending on the IOCTL received:
 
-HackSysExtremeVulnerableDriver.c             |  HackSysExtremeVulnerableDriver.h
-:-------------------------:|:-------------------------:
-![](/assets/img/code_IrpDeviceIoCtlHandler.png)  |  ![](/assets/img/code_IOCTL_definitions.png)
-
+HackSysExtremeVulnerableDriver.c
+![](/assets/img/code_IrpDeviceIoCtlHandler.png)  
 _source code of the IrpDeviceIoCtlHandler_
+
+![](/assets/img/code_IOCTL_definitions.png)
+_IOCTL definitions_
+
 
 This is how it looks in the disassembled code:
 
-![](/assets/img/ida_stackbo_flow.png)  
+![IrpDeviceIoCtlHandler](/assets/img/ida_stackbo_flow.png)  
 _switch statement and IOCTL handler_
 
-<code>0x222003</code> is deducted from the IOCTL value held in ECX and the result is loaded into EAX register (1). Then, it is used in the *jmp* instruction to jump to the correct offset from the jump table (2). In the bottom, we see code at this offset that calls <code>BufferOverflowStackIoctlHandler</code> and <code>TriggerBufferOverflowStack</code> in the end (3).
+<code>0x222003</code> is deducted from the IOCTL value held in ECX and the result is loaded into EAX register (1). If the difference is larger than <code>0x6C</code>, program returns "[-] Invalid IOCTL Code: " message. If not, the IOCTL is used in the *jmp* instruction to jump to the correct offset from the jump table (2). In the bottom, we see code at this offset that calls <code>BufferOverflowStackIoctlHandler</code> and <code>TriggerBufferOverflowStack</code> in the end (3).
+
+![WrongIOCTL](/assets/img/ida_invalidioctl.png)  
+_Incorrect IOCTL code_
 
 
 ### <span class="myheader">Exploitation</span>
