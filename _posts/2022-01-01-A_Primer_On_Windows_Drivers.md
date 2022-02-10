@@ -1,9 +1,9 @@
 ---
 layout: post
-title: "HEVD: A primer on Windows drivers"
+title: "A primer on Windows drivers"
 date: 2022-01-01 09:00:00 +0100
-categories: [HEVD, Intro to Windows drivers]
-tags: [drivers, x86]
+categories: [HEVD]
+tags: [driver, x86]
 ---
 
 
@@ -103,6 +103,7 @@ IOCTL is generated with <code>DeviceIoControl</code> API located in kernel32.dll
 Windows I/O Manager takes the standard API request or IOCTL and builds **I/O Request Packet (IRP)** to describe the I/O request to kernel-mode components and determine which device should process the request. IRP is a kernel structure used to represent I/O request as it moves around the kernel system. It has all the information that the driver needs to perform a given action on an I/O request.
 <br>
 So when a program issues a request to a device, an IRP is created in kernel space to reflect that request.
+In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.[^5]
 
 ![IRP structure](/assets/img/windbg_irp_structure.png)
 _IRP structure_
@@ -112,7 +113,12 @@ IOCTL control codes have following layout[^4]
 ![IOCTL layout](/assets/img/ioctl_layout.png)
 _IOCTL layout_
 
-In summary, an IOCTL is a particular user-mode type of "miscellaneous" request to a device driver. An IRP is a kernel-mode data structure for managing all kinds of requests inside the Windows driver kernel architecture.[^5]
++ <code>Device Type</code> identifies the device type. Value less than 0x8000 are used by Microsoft.
++ <code>Required Access</code> specifies access level that a caller opening the device needs to request. It can be *FILE_ANY_ACCESS (0x0), FILE_READ_ACCESS (0x1)* or *FILE_WRITE_ACCESS (0x2)*
++ <code>Function Code</code> identifies function to be performed by the driver. Values less than 0x800 are reserved by Microsoft
++ <code>Transfer Type</code> indicates how the system will pass data between the caller of <code>DeviceIoControl</code> and the driver that handles the IRP
+
+To decode I/O Control Codes we can use the <code>CTL_CODE</code> macro that comes with the *wdm.h* or *ntddk.h* headers or refer to an [online tool](https://www.osronline.com/article.cfm%5earticle=229.htm). 
 
 ##### <span class="myheader">User-Kernel communication</span>
 
