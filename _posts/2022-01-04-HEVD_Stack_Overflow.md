@@ -3,7 +3,7 @@ layout: post
 title: "HEVD: Stack Overflow exploitation"
 date: 2022-01-04 09:00:00 +0100
 categories: [HEVD, Stack Overflow]
-tags: [exploit, drivers, x86, shellcoding, kernel exploitation]
+tags: [exploit, driver, x86, shellcode, kernel exploitation]
 ---
 
 
@@ -79,20 +79,19 @@ Let's have a look at the source code first.
 ![IrpDeviceIoCtlHandler source code](/assets/img/code_IrpDeviceIoCtlHandler.png)
 *source code of the IrpDeviceIoCtlHandler*
 
+In case *HEVD_IOCTL_BUFFER_OVERFLOW_STACK* is received, <code>BufferOverflowStackioctlHandler</code> function is executed. *HEVD_IOCTL_BUFFER_OVERFLOW_STACK* is a macro that creates IOCTL with <code>0x800</code> function code:
+
 ![IOCTL definitions](/assets/img/code_IOCTL_definitions.png)
 *IOCTL definitions*
 
-This is how the disassembled function code looks in IDA:
+This is how the disassembled <code>IrpDeviceIoCtlHandler</code> function code looks in IDA:
 
 ![IrpDeviceIoCtlHandler](/assets/img/ida_stackbo_flow.png)
 *switch statement and IOCTL handler*
 
 <code>0x222003</code> is deducted from the IOCTL value held in ECX and the result is loaded into EAX register (1). If the difference is larger than <code>0x6C</code>, program jumps to a different part of code to return "[-] Invalid IOCTL Code: " message. It means there are 109 possible IOCTL codes that will be accepted by the program, in the range <code>0x222003 - 0x22206f</code>.
 <br>
-If the difference is smaller than <code>0x6C</code>, the IOCTL is used in the *jmp* instruction to jump to the correct offset from the jump table (2). In the bottom of the picture, we see code at this offset that calls <code>BufferOverflowStackIoctlHandler</code> and <code>TriggerBufferOverflowStack</code> in the end (3).
-
-![WrongIOCTL](/assets/img/ida_invalidioctl.png)
-*Incorrect IOCTL code*
-
+If the difference is smaller than or equal <code>0x6C</code>, the IOCTL is used in the *jmp* instruction to jump to the correct offset from the jump table (2). In the bottom of the picture, we see code at one of the offsets that calls <code>BufferOverflowStackIoctlHandler</code> and <code>TriggerBufferOverflowStack</code> in the end (3).
 
 ### <span class="myheader">Exploitation</span>
+
