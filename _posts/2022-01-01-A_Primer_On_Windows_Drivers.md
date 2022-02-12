@@ -116,7 +116,7 @@ _IOCTL layout_
 + <code>Device Type</code> identifies the device type. Value less than 0x8000 are used by Microsoft.
 + <code>Required Access</code> specifies access level that a caller opening the device needs to request. It can be *FILE_ANY_ACCESS (0x0), FILE_READ_ACCESS (0x1)* or *FILE_WRITE_ACCESS (0x2)*
 + <code>Function Code</code> identifies function to be performed by the driver. Values less than 0x800 are reserved by Microsoft
-+ <code>Transfer Type</code> indicates how the system will pass data between the caller of <code>DeviceIoControl</code> and the driver that handles the IRP
++ <code>Transfer Type</code> indicates how the system will pass data between the caller of <code>DeviceIoControl</code> and the driver that handles the IRP. It can be *METHOD_BUFFERED (0x0), METHOD_IN_DIRECT (0x1), METHOD_OUT_DIRECT (0x2), METHOD_NEITHER (0x3)* 
 
 To decode I/O Control Codes we can use the <code>CTL_CODE</code> macro that comes with the *wdm.h* or *ntddk.h* headers or refer to an [online tool](https://www.osronline.com/article.cfm%5earticle=229.htm). 
 

