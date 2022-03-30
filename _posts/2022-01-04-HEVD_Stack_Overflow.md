@@ -9,7 +9,7 @@ tags: [exploit, driver, x86, shellcode, kernel exploitation]
 
 ## <span class="myheader">Loading HEVD driver</span>
 
-In this post we will be exploiting the Stack Overflow vulnerability in the [HEVD](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver) driver. Before that, I recommend to read the previous blogpost where I explain some basic concepts.
+In this post we will be exploiting the Stack Overflow vulnerability in the [HEVD v3](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver) driver. We're going to use Windows 7 SP1 as our target. To get better understanding of how drivers work in Windows, I recommend to read the previous blogpost where I explain some basic concepts.
 
 To load the driver, we download first the pre-built executable from [here](https://github.com/hacksysteam/HackSysExtremeVulnerableDriver/releases) (or build it from source if you have too much time). Then, we download and run the [OSR Driver Loader](https://www.osronline.com/article.cfm%5earticle=157.htm) to load the driver in the debugee:
 
