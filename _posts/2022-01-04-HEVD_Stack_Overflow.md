@@ -1,8 +1,8 @@
 ---
 layout: post
-title: "HEVD: Stack Overflow exploitation"
+title: "HEVD: Stack Buffer Overflow"
 date: 2022-01-04 09:00:00 +0100
-categories: [HEVD, Stack Overflow]
+categories: [HEVD]
 tags: [exploit, driver, x86, shellcode, kernel exploitation]
 ---
 
