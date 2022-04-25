@@ -69,7 +69,7 @@ You can think of a driver as a DLL that is loaded into the kernel address space 
 
 ##### <span class="myheader">DriverEntry</span>
 
-After a driver is loaded, first piece of code that is called is a <code>DriverEntry</code> function:
+After a driver is loaded, first piece of code that is called is a <code>DriverEntry</code> function. It's like a <code>main()</code> function in the C/C++ programming - an entry point that has important tasks to do like creation of device object, establishing communication with the deriver and definingother key functions:
 
 ```c++
 NTSTATUS DriverEntry(
@@ -78,6 +78,8 @@ NTSTATUS DriverEntry(
 );
 ```
 The <code>DriverObject</code> argument is a pointer to the <code>DRIVER_OBJECT</code> structure filled out by the I/O manager during the driver loading process that holds information about the driver itself. I/O manager creates a <code>DRIVER_OBJECT</code> for every driver loaded in the system.
+<br>
+<code>ResgistryPath</code> is a system supplied registry path for this driver.
 
 ![DRIVER_OBJECT](/assets/img/windbg_driver_object.png)
 *DRIVER_OBJECT structure*
@@ -94,6 +96,11 @@ If a device wants to be accessible for user processes, a driver needs to define 
 
 ![Symlink in WinObj](/assets/img/WinObj_symlink.png)
 _WinObj showing symlink for a storage device_
+
+Device object is created by the <code>DriverEntry</code> function with a call to <code>IoCreateDevice</code> or <code>IoCreateDeviceSecure</code>. Next, <code>DriverEntry</code> calls <code>IoCreateSymbolicLink</code> with the created device object to establish symbolic link that allows user mode processes to communicate with the driver.
+
+![IoCreateDevice](/assets/img/IoCreateDevice_example.png)
+_sample driver_
 
 ##### <span class="myheader">IOCTL and IRP</span>
 
